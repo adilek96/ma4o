@@ -1,5 +1,5 @@
 "use client";
-import { useTranslation } from "react-i18next";
+
 import Dock from "./Dock";
 import { FaHeart } from "react-icons/fa6";
 import { FaUsersViewfinder } from "react-icons/fa6";
