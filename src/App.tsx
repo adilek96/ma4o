@@ -12,12 +12,6 @@ function App() {
       case "discover":
         return <DiscoverScreen />;
 
-      //   case "matches":
-      //     return <MatchesScreen />;
-      //   case "messages":
-      //     return <MessagesScreen />;
-      //   case "profile":
-      //     return <ProfileScreen />;
       default:
         return <DiscoverScreen />;
     }
