@@ -49,12 +49,10 @@ const DiscoverScreen = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] p-4 animate-fadeInUp">
       <div className="flex-1 flex items-center justify-center mb-6">
-        <div className="animate-scaleIn">
-          {/* <ProfileCard profile={currentProfile} /> */}
-        </div>
+        <div className="animate-scaleIn component-bg rounded-2xl w-full h-64 border border-border shadow-md" />
       </div>
 
-      <div className="flex justify-center items-center gap-6 pb-4 animate-slideInLeft">
+      <div className="flex justify-center items-center gap-6 pb-4 animate-slideInLeft component-bg rounded-2xl p-4 border border-border shadow-md">
         <Button
           onClick={() => handleAction("pass")}
           variant="outline"
