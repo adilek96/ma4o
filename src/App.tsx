@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BottomNavigation from "./components/BottomNavigation";
 import Header from "./components/Header";
 import DiscoverScreen from "./components/DiscoverScreen";
@@ -16,6 +16,50 @@ function App() {
     localStorage.setItem("lang", "en");
   }
   // const { resolvedTheme } = useTheme();
+  useEffect(() => {
+    if (!window.Telegram?.WebApp) {
+      console.warn(
+        "%c[Telegram]",
+        "color: red; font-weight: bold;",
+        "WebApp API not found"
+      );
+      return;
+    }
+
+    const tg = window.Telegram.WebApp;
+    if (tg) {
+      console.log(
+        "%c[InitData]",
+        "color: #4CAF50; font-weight: bold;",
+        tg.initData
+      );
+      console.log("%c[InitDataUnsafe]", "color: #2196F3; font-weight: bold;");
+      console.table(tg.initDataUnsafe);
+
+      console.log(
+        "%c[Version]",
+        "color: #FF9800; font-weight: bold;",
+        tg.version
+      );
+      console.log(
+        "%c[Platform]",
+        "color: #9C27B0; font-weight: bold;",
+        tg.platform
+      );
+
+      console.log(
+        "%c[ColorScheme]",
+        "color: #E91E63; font-weight: bold;",
+        tg.colorScheme
+      );
+      console.log(
+        "%c[ThemeParams]",
+        "color: #00BCD4; font-weight: bold;",
+        tg.themeParams
+      );
+    }
+  }, []);
+
   return (
     <>
       <div className="flex flex-col  justify-center items-center">
