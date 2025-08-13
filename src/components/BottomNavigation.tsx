@@ -6,8 +6,6 @@ import { FaUsersViewfinder } from "react-icons/fa6";
 import { FaUserAlt } from "react-icons/fa";
 
 const BottomNavigation = () => {
-  const { t } = useTranslation();
-
   const items = [
     {
       icon: <FaUsersViewfinder size={18} />,
