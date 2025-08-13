@@ -17,7 +17,7 @@ function App() {
   }
   // const { resolvedTheme } = useTheme();
   useEffect(() => {
-    if (!window.Telegram?.WebApp) {
+    if (!window.Telegram) {
       console.warn(
         "%c[Telegram]",
         "color: red; font-weight: bold;",
@@ -26,7 +26,7 @@ function App() {
       return;
     }
 
-    const tg = window.Telegram.WebApp;
+    const tg = window.Telegram;
     if (tg) {
       console.log(
         "%c[InitData]",
