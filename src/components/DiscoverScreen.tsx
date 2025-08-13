@@ -34,7 +34,7 @@ const mockProfiles = [
 ];
 
 const DiscoverScreen = () => {
-  const { t } = useTranslation();
+  useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleAction = (action: "like" | "pass" | "superlike") => {

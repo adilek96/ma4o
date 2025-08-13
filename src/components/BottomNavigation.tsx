@@ -1,7 +1,7 @@
 "use client";
 import { useTranslation } from "react-i18next";
 
-type Screen = "discover" | "matches" | "messages" | "profile";
+export type Screen = "discover" | "matches" | "messages" | "profile";
 
 interface BottomNavigationProps {
   activeTab: Screen;

@@ -1,17 +1,17 @@
 import { useState } from "react";
-import BottomNavigation from "./components/BottomNavigation";
-import Header from "./components/Header";
+import BottomNavigation, { type Screen } from "./components/BottomNavigation";
+import Header from "./components/header";
 import Iridescence from "./components/Iridescence";
 import DiscoverScreen from "./components/DiscoverScreen";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("discover");
+  const [activeTab, setActiveTab] = useState<Screen>("discover");
 
   const renderScreen = () => {
     switch (activeTab) {
       case "discover":
         return <DiscoverScreen />;
-        s;
+
       //   case "matches":
       //     return <MatchesScreen />;
       //   case "messages":
@@ -40,6 +40,7 @@ function App() {
         />
       </div>
       <Header />
+      {renderScreen()}
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </>
   );
