@@ -3,7 +3,7 @@ import BottomNavigation, { type Screen } from "./components/BottomNavigation";
 
 import Iridescence from "./components/Iridescence";
 import DiscoverScreen from "./components/DiscoverScreen";
-import Header from "./components/header";
+import Header from "./components/Header";
 
 function App() {
   const [activeTab, setActiveTab] = useState<Screen>("discover");
