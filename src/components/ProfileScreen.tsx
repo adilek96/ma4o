@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   const { i18n } = useTranslation();
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+
   const lang = i18n.language === "ru" ? "ru" : "en";
   const changeLanguage = (next: "en" | "ru") => {
     i18n.changeLanguage(next);
