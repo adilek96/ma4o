@@ -1,8 +1,9 @@
 import { useState } from "react";
 import BottomNavigation, { type Screen } from "./components/BottomNavigation";
-import Header from "./components/header";
+
 import Iridescence from "./components/Iridescence";
 import DiscoverScreen from "./components/DiscoverScreen";
+import Header from "./components/header";
 
 function App() {
   const [activeTab, setActiveTab] = useState<Screen>("discover");
