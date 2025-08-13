@@ -5,6 +5,14 @@ import { ru } from "../translation/ru";
 
 
 
+const savedLng = (() => {
+  try {
+    return localStorage.getItem("lng") || undefined;
+  } catch {
+    return undefined;
+  }
+})();
+
 i18n
   .use(initReactI18next) 
   .init({
@@ -16,7 +24,8 @@ i18n
         translation: ru
       }
     },
-    lng: "en", 
+    lng: savedLng || "en", 
+    fallbackLng: "en",
 
     interpolation: {
       escapeValue: false 

@@ -3,6 +3,10 @@ import BottomNavigation from "./components/BottomNavigation";
 import Header from "./components/Header";
 
 function App() {
+  const lang = localStorage.getItem("lang") || "en";
+  if (lang !== "ru" && lang !== "en") {
+    localStorage.setItem("lang", "en");
+  }
   return (
     <div className="flex flex-col  justify-center items-center">
       <Header />
