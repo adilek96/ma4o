@@ -46,7 +46,7 @@ export default function EditProfileScreen({ onBack }: { onBack: () => void }) {
   return (
     <div className="p-4 space-y-4 animate-fadeInUp">
       {/* Basic info */}
-      <div className="p-4 component-bg glass-effect border border-border rounded-2xl shadow-md">
+      <div className="p-4 component-bg border border-border rounded-2xl shadow-md">
         <h2 className="text-xl font-semibold text-foreground mb-3">
           Edit profile
         </h2>
@@ -71,7 +71,7 @@ export default function EditProfileScreen({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Interests */}
-      <div className="p-4 component-bg glass-effect border border-border rounded-2xl shadow-md">
+      <div className="p-4 component-bg border border-border rounded-2xl shadow-md">
         <h3 className="text-lg font-semibold text-foreground mb-3">
           Interests
         </h3>
@@ -118,7 +118,7 @@ export default function EditProfileScreen({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Photos */}
-      <div className="p-4 component-bg glass-effect border border-border rounded-2xl shadow-md">
+      <div className="p-4 component-bg border border-border rounded-2xl shadow-md">
         <h3 className="text-lg font-semibold text-foreground mb-3">Photos</h3>
         <input
           ref={fileRef}
@@ -150,7 +150,7 @@ export default function EditProfileScreen({ onBack }: { onBack: () => void }) {
               />
               <button
                 aria-label="Remove photo"
-                className="absolute top-1 right-1 text-xs px-2 py-1 rounded-lg component-bg glass-effect border border-border"
+                className="absolute top-1 right-1 text-xs px-2 py-1 rounded-lg component-bg border border-border"
                 onClick={() => removePhoto(idx)}
               >
                 ✕
@@ -169,7 +169,7 @@ export default function EditProfileScreen({ onBack }: { onBack: () => void }) {
           Save
         </Button>
         <Button
-          className="flex-1 rounded-xl border-border text-foreground component-bg glass-effect"
+          className="flex-1 rounded-xl border-border text-foreground component-bg"
           variant="outline"
           onClick={onBack}
         >

@@ -18,7 +18,7 @@ const Header = () => {
   };
 
   return (
-    <header className="flex items-center justify-between p-4 w-[98%] mx-2 sticky top-2 z-50 animate-slideInLeft rounded-2xl border-2 border-border component-bg glass-effect shadow-md">
+    <header className="flex items-center justify-between p-4 w-[98%] mx-2 sticky top-2 z-50 animate-slideInLeft rounded-2xl border-2 border-border component-bg shadow-md">
       <Button
         onClick={toggleLanguage}
         variant="outline"

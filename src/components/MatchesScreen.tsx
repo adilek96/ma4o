@@ -59,7 +59,7 @@ export default function MatchesScreen({ language }: MatchesScreenProps) {
 
   return (
     <div className="p-4 space-y-6 animate-fadeInUp">
-      <div className="text-center animate-scaleIn component-bg glass-effect rounded-2xl py-4 border border-border shadow-md">
+      <div className="text-center animate-scaleIn component-bg rounded-2xl py-4 border border-border shadow-md">
         <h2 className="text-3xl font-bold gradient-text mb-2">{t.matches}</h2>
         <p className="text-foreground/70 animate-pulse-custom">
           {mockMatches.filter((m) => m.isNew).length} {t.newMatches}
@@ -70,7 +70,7 @@ export default function MatchesScreen({ language }: MatchesScreenProps) {
         {mockMatches.map((match, index) => (
           <div
             key={match.id}
-            className="relative p-6 text-center transition-all duration-300 card-hover cursor-pointer shadow-md animate-slideInLeft rounded-xl component-bg glass-effect border border-border"
+            className="relative p-6 text-center transition-all duration-300 card-hover cursor-pointer shadow-md animate-slideInLeft rounded-xl component-bg border border-border"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             {match.isNew && (

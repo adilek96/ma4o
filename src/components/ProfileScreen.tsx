@@ -61,7 +61,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             background: `conic-gradient(var(--ring) ${deg}deg, transparent 0)`,
           }}
         >
-          <div className="absolute inset-1 rounded-full component-bg glass-effect border border-border flex items-center justify-center">
+          <div className="absolute inset-1 rounded-full component-bg border border-border flex items-center justify-center">
             <span className="text-sm font-semibold text-foreground">
               {value}%
             </span>
@@ -75,7 +75,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   return (
     <div className="p-4 space-y-6 animate-fadeInUp">
       {/* Profile Header */}
-      <div className="p-6 text-center shadow-md glass-effect animate-scaleIn rounded-xl component-bg border border-border">
+      <div className="p-6 text-center shadow-md animate-scaleIn rounded-xl component-bg border border-border">
         <div className="relative w-32 h-32 mx-auto mb-6">
           <div className="absolute -inset-1 rounded-full bg-[conic-gradient(var(--ring),transparent_60%)] blur-sm opacity-70 animate-[spin_8s_linear_infinite]"></div>
           <div className="relative w-full h-full ring-4 ring-white/20 transition-all duration-300 hover:ring-white/40 rounded-full overflow-hidden">
@@ -100,7 +100,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
         </button>
       </div>
 
-      <div className="p-4 shadow-md glass-effect rounded-xl component-bg border border-border">
+      <div className="p-4 shadow-md rounded-xl component-bg border border-border">
         <div className="grid grid-cols-3 text-center">
           <CircleStat
             label={lang === "ru" ? "Популярность" : "Popularity"}
@@ -118,7 +118,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
       </div>
 
       {/* Bio Section */}
-      <div className="p-6 shadow-md glass-effect animate-slideInLeft rounded-xl component-bg border border-border">
+      <div className="p-6 shadow-md animate-slideInLeft rounded-xl component-bg border border-border">
         <h4 className="font-bold text-lg text-foreground mb-3 gradient-text">
           {t.bioTitle}
         </h4>
@@ -129,7 +129,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
       </div>
 
       {/* Interests */}
-      <div className="p-6 shadow-md glass-effect animate-slideInRight rounded-xl component-bg border border-border">
+      <div className="p-6 shadow-md animate-slideInRight rounded-xl component-bg border border-border">
         <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
           {t.interests}
         </h4>
@@ -147,7 +147,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
       </div>
 
       {/* Photos */}
-      <div className="p-6 shadow-md glass-effect animate-fadeInUp rounded-xl component-bg border border-border">
+      <div className="p-6 shadow-md animate-fadeInUp rounded-xl component-bg border border-border">
         <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
           {t.photos}
         </h4>
@@ -171,7 +171,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
       {/* Settings */}
       <div className="space-y-3 animate-slideInLeft">
-        <div className="p-4 shadow-md glass-effect card-hover rounded-xl component-bg border border-border">
+        <div className="p-4 shadow-md card-hover rounded-xl component-bg border border-border">
           <div className="flex items-center justify-between gap-3">
             <span className="font-medium text-foreground">{t.theme}</span>
             <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
           </div>
         </div>
 
-        <div className="p-4 shadow-md glass-effect card-hover rounded-xl component-bg border border-border">
+        <div className="p-4 shadow-md card-hover rounded-xl component-bg border border-border">
           <div className="flex items-center justify-between gap-3">
             <span className="font-medium text-foreground">
               {t.languageLabel}
@@ -239,7 +239,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
           onClick={() => setLightboxIndex(null)}
         >
           <div
-            className="max-w-md w-[90%] aspect-square rounded-2xl overflow-hidden component-bg glass-effect border border-border shadow-md"
+            className="max-w-md w-[90%] aspect-square rounded-2xl overflow-hidden component-bg border border-border shadow-md"
             onClick={(e) => e.stopPropagation()}
           >
             <img

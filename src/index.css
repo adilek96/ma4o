@@ -45,8 +45,8 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
-  /* Light surface gradient for components */
-  --component-bg: linear-gradient(135deg, oklch(0.985 0 0) 0%, oklch(0.95 0 0) 100%);
+  /* Solid surface for components */
+  --component-bg: var(--card);
   /* Glass variables (light) */
   --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(0, 0, 0, 0.06);
@@ -84,8 +84,8 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  /* Dark surface gradient for components */
-  --component-bg: linear-gradient(135deg, oklch(0.16 0 0) 0%, oklch(0.22 0 0) 100%);
+  /* Solid surface for components */
+  --component-bg: var(--card);
   /* Glass variables (dark) */
   --glass-bg: rgba(0, 0, 0, 0.8);
   --glass-border: rgba(255, 255, 255, 0.12);
