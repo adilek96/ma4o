@@ -5,7 +5,7 @@ import DiscoverScreen from "./components/DiscoverScreen";
 import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
-import { useTheme } from "./components/ThemeProvider";
+// import { useTheme } from "./components/ThemeProvider";
 
 type Screen = "discover" | "matches" | "profile" | "editProfile";
 
@@ -15,7 +15,7 @@ function App() {
   if (lang !== "ru" && lang !== "en") {
     localStorage.setItem("lang", "en");
   }
-  const { resolvedTheme } = useTheme();
+  // const { resolvedTheme } = useTheme();
   return (
     <>
       <div className="flex flex-col  justify-center items-center">

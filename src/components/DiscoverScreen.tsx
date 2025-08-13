@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import Stack from "./Stack";
 import { Button } from "../components/ui/button";
 import { FaTimes, FaHeart } from "react-icons/fa";
-import { FaStar } from "react-icons/fa6";
 
 const mockProfiles = [
   {
