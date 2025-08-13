@@ -59,9 +59,9 @@ export default function MatchesScreen({ language }: MatchesScreenProps) {
 
   return (
     <div className="p-4 space-y-6 animate-fadeInUp">
-      <div className="text-center animate-scaleIn component-bg rounded-2xl py-4 border border-border shadow-md">
+      <div className="text-center animate-scaleIn component-bg glass-effect rounded-2xl py-4 border border-border shadow-md">
         <h2 className="text-3xl font-bold gradient-text mb-2">{t.matches}</h2>
-        <p className="text-white/70 animate-pulse-custom">
+        <p className="text-foreground/70 animate-pulse-custom">
           {mockMatches.filter((m) => m.isNew).length} {t.newMatches}
         </p>
       </div>
@@ -70,7 +70,7 @@ export default function MatchesScreen({ language }: MatchesScreenProps) {
         {mockMatches.map((match, index) => (
           <div
             key={match.id}
-            className="relative p-6 text-center transition-all duration-300 card-hover cursor-pointer shadow-md animate-slideInLeft rounded-xl component-bg border border-border"
+            className="relative p-6 text-center transition-all duration-300 card-hover cursor-pointer shadow-md animate-slideInLeft rounded-xl component-bg glass-effect border border-border"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             {match.isNew && (
@@ -89,7 +89,7 @@ export default function MatchesScreen({ language }: MatchesScreenProps) {
               />
             </div>
 
-            <h3 className="font-bold text-lg text-white">{match.name}</h3>
+            <h3 className="font-bold text-lg text-foreground">{match.name}</h3>
 
             {match.isNew && (
               <p className="text-xs gradient-text font-medium mt-1 animate-pulse-custom">

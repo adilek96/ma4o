@@ -4,10 +4,11 @@ import Header from "./components/Header";
 import DiscoverScreen from "./components/DiscoverScreen";
 import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
+import EditProfileScreen from "./components/EditProfileScreen";
 import Iridescence from "./components/Iridescence";
 import { useTheme } from "./components/ThemeProvider";
 
-type Screen = "discover" | "matches" | "profile";
+type Screen = "discover" | "matches" | "profile" | "editProfile";
 
 function App() {
   const [active, setActive] = useState<Screen>("discover");
@@ -39,9 +40,17 @@ function App() {
         <main className="flex-1 w-full max-w-md mx-auto">
           {active === "discover" && <DiscoverScreen />}
           {active === "matches" && <MatchesScreen language={lang} />}
-          {active === "profile" && <ProfileScreen />}
+          {active === "profile" && (
+            <ProfileScreen onEdit={() => setActive("editProfile")} />
+          )}
+          {active === "editProfile" && (
+            <EditProfileScreen onBack={() => setActive("profile")} />
+          )}
         </main>
-        <BottomNavigation active={active} onNavigate={setActive} />
+        <BottomNavigation
+          active={active === "editProfile" ? "profile" : active}
+          onNavigate={(s) => setActive(s)}
+        />
       </div>
     </>
   );
