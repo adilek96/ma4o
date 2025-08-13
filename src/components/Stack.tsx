@@ -144,6 +144,7 @@ export default function Stack({
     >
       {cards.map((card, index) => {
         const randomRotate = randomRotation ? Math.random() * 10 - 5 : 0;
+        const isTop = index === cards.length - 1;
 
         return (
           <CardRotate
@@ -155,7 +156,9 @@ export default function Stack({
               className="rounded-2xl overflow-hidden border border-border component-bg shadow-md"
               onClick={() => sendToBackOnClick && sendToBack(card.id)}
               animate={{
-                rotateZ: (cards.length - index - 1) * 4 + randomRotate,
+                rotateZ: isTop
+                  ? 0
+                  : (cards.length - index - 1) * 4 + randomRotate,
                 scale: 1 + index * 0.06 - cards.length * 0.06,
                 transformOrigin: "50% 60%",
               }}
@@ -175,16 +178,31 @@ export default function Stack({
                 alt={`card-${card.id}`}
                 className="w-full h-full object-cover pointer-events-none"
               />
-              {(card.name || card.age || card.bio) && (
-                <div className="absolute inset-x-0 bottom-0 p-3">
-                  <div className="component-bg border border-border rounded-xl p-2">
-                    <div className="text-sm font-semibold text-foreground">
+              {(card.name ||
+                card.age ||
+                card.bio ||
+                (card.interests && card.interests.length)) && (
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <div className="component-bg border border-border rounded-xl p-5">
+                    <div className="text-xl font-semibold text-foreground">
                       {card.name}
                       {card.age ? ` • ${card.age}` : ""}
                     </div>
                     {card.bio && (
-                      <div className="text-[11px] text-foreground/70 line-clamp-1">
+                      <div className="text-base text-foreground/70 line-clamp-4">
                         {card.bio}
+                      </div>
+                    )}
+                    {card.interests && card.interests.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {card.interests.slice(0, 8).map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-sm px-3 py-1 rounded-lg bg-white/20 text-foreground border border-white/30"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>

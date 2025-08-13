@@ -26,7 +26,7 @@ const Header = () => {
       >
         {i18n.language?.toUpperCase?.() || "EN"}
       </Button>
-      <h1 className="text-2xl font-bold gradient-text animate-scaleIn">
+      <h1 className="text-2xl font-bold gradient-text animate-scaleIn relative">
         <img src={logo} alt="logo" className="w-30 h-10" />
       </h1>
       <div className="flex items-center gap-2">

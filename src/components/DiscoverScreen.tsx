@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Stack from "./Stack";
-import { Button } from "../components/ui/button";
 import { FaTimes, FaHeart } from "react-icons/fa";
 
 const mockProfiles = [
@@ -38,46 +37,34 @@ const DiscoverScreen = () => {
   const [seed] = useState(() => Math.random());
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] p-4 animate-fadeInUp">
-      <div className="flex-1 flex items-center justify-center mb-6 relative">
-        <div className="w-full max-w-md h-96 flex items-center justify-center">
+    <div className="flex flex-col h-[calc(100vh-8rem)]  animate-fadeInUp">
+      <div className="flex-1 flex w-full   items-center justify-center mb-6 relative overflow-hidden">
+        {/* Background half-icons */}
+        <div className="pointer-events-none    absolute inset-0 z-0">
+          <div className="absolute left-[-80px] top-1/2 -translate-y-1/2 text-rose-500/25 scale-y-150">
+            <FaTimes size={280} />
+          </div>
+          <div className="absolute right-[-80px] top-1/2 -translate-y-1/2 text-red-500/25 scale-y-150">
+            <FaHeart size={280} />
+          </div>
+        </div>
+        <div className="w-full max-w-sm h-[34rem] flex items-center justify-center relative z-10">
           <Stack
             key={seed}
             randomRotation
             sensitivity={180}
             sendToBackOnClick
-            cardDimensions={{ width: 360, height: 420 }}
+            cardDimensions={{ width: 320, height: 520 }}
             cardsData={mockProfiles.map((p) => ({
               id: p.id,
               img: p.image,
               name: p.name,
               age: p.age,
               bio: p.bio,
+              interests: p.interests,
             }))}
           />
         </div>
-      </div>
-      <div className="flex justify-center items-center gap-4 pb-3 component-bg rounded-2xl p-3 border border-border shadow-md max-w-sm mx-auto">
-        <Button
-          onClick={() => {}}
-          variant="outline"
-          size="lg"
-          className="w-14 h-14 rounded-full border-2 border-red-200 hover:border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:border-red-700 dark:hover:bg-red-950/20 transition-all duration-300 btn-bounce group"
-        >
-          <span className="text-2xl text-foreground group-hover:scale-125 transition-transform duration-200">
-            <FaTimes />
-          </span>
-        </Button>
-        <Button
-          onClick={() => {}}
-          variant="outline"
-          size="lg"
-          className="w-14 h-14 rounded-full border-2 border-green-200 hover:border-green-300 hover:bg-green-50 dark:border-green-800 dark:hover:border-green-700 dark:hover:bg-green-950/20 transition-all duration-300 btn-bounce group"
-        >
-          <span className="text-2xl text-red-500 group-hover:scale-125 transition-transform duration-200">
-            <FaHeart />
-          </span>
-        </Button>
       </div>
     </div>
   );

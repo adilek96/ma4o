@@ -128,6 +128,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
 }
 
@@ -135,6 +136,41 @@
 .component-bg {
   background: var(--component-bg);
 }
+
+.neon-purple {
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6), 0 0 16px rgba(168, 85, 247, 0.45), 0 0 24px rgba(168, 85, 247, 0.35);
+  animation: neonPulse 2.2s ease-in-out infinite;
+}
+
+.neon-purple:hover {
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.85), 0 0 26px rgba(168, 85, 247, 0.6), 0 0 44px rgba(168, 85, 247, 0.5);
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.6), 0 0 16px rgba(168, 85, 247, 0.45), 0 0 24px rgba(168, 85, 247, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.8), 0 0 28px rgba(168, 85, 247, 0.6), 0 0 48px rgba(168, 85, 247, 0.5);
+  }
+}
+
+/* Softer purple neon for active nav button only */
+
+.neon-purple-soft {
+  box-shadow: 0 0 7px rgba(168, 85, 247, 0.75), 0 0 18px rgba(168, 85, 247, 0.55);
+  animation: neonPulseSoft 5.2s ease-in-out infinite;
+}
+
+@keyframes neonPulseSoft {
+  0%, 100% {
+    box-shadow: 0 0 7px rgba(168, 85, 247, 0.75), 0 0 18px rgba(168, 85, 247, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.85), 0 0 22px rgba(168, 85, 247, 0.65);
+  }
+}
+
 
 .glass-effect {
   background: var(--glass-bg);

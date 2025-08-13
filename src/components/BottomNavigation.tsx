@@ -18,19 +18,19 @@ const BottomNavigation = ({ active, onNavigate }: BottomNavigationProps) => {
       icon: <FaUsersViewfinder size={18} />,
       label: "Discover",
       onClick: () => onNavigate("discover"),
-      className: active === "discover" ? "border-white bg-white/10" : undefined,
+      className: active === "discover" ? "neon-purple-soft" : undefined,
     },
     {
       icon: <FaHeart size={18} />,
       label: "Matches",
       onClick: () => onNavigate("matches"),
-      className: active === "matches" ? "border-white bg-white/10" : undefined,
+      className: active === "matches" ? "neon-purple-soft" : undefined,
     },
     {
       icon: <FaUserAlt size={18} />,
       label: "Profile",
       onClick: () => onNavigate("profile"),
-      className: active === "profile" ? "border-white bg-white/10" : undefined,
+      className: active === "profile" ? "neon-purple-soft" : undefined,
     },
   ];
 
