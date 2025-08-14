@@ -87,6 +87,11 @@ function App() {
         "color: #00BCD4; font-weight: bold;",
         tg.themeParams
       );
+      console.log(
+        "%c[InitData]",
+        "color: #4CAF50; font-weight: bold;",
+        tg.initData
+      );
 
       // Уведомляем Telegram что приложение готово
       tg.ready();
