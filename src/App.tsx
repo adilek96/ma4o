@@ -7,6 +7,36 @@ import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
 // import { useTheme } from "./components/ThemeProvider";
 
+// Создаем fallback объект для разработки
+if (typeof window !== "undefined" && !window.Telegram) {
+  window.Telegram = {
+    WebApp: {
+      initData: "",
+      initDataUnsafe: {},
+      version: "6.0",
+      platform: "desktop",
+      colorScheme: "light",
+      themeParams: {},
+      ready: () => console.log("Telegram WebApp ready"),
+      expand: () => console.log("Telegram WebApp expand"),
+      close: () => console.log("Telegram WebApp close"),
+      MainButton: {
+        text: "",
+        color: "#2481cc",
+        textColor: "#ffffff",
+        isVisible: false,
+        isActive: false,
+        show: () => console.log("MainButton show"),
+        hide: () => console.log("MainButton hide"),
+        enable: () => console.log("MainButton enable"),
+        disable: () => console.log("MainButton disable"),
+        onClick: (callback: () => void) =>
+          console.log("MainButton onClick", callback),
+      },
+    },
+  };
+}
+
 type Screen = "discover" | "matches" | "profile" | "editProfile";
 
 function App() {
@@ -17,16 +47,16 @@ function App() {
   }
   // const { resolvedTheme } = useTheme();
   useEffect(() => {
-    if (!window.Telegram) {
+    if (!window.Telegram?.WebApp) {
       console.warn(
         "%c[Telegram]",
         "color: red; font-weight: bold;",
-        "WebApp API not found"
+        "WebApp API not found - running in development mode"
       );
       return;
     }
 
-    const tg = window.Telegram;
+    const tg = window.Telegram.WebApp;
     if (tg) {
       console.log(
         "%c[InitData]",
@@ -57,6 +87,9 @@ function App() {
         "color: #00BCD4; font-weight: bold;",
         tg.themeParams
       );
+
+      // Уведомляем Telegram что приложение готово
+      tg.ready();
     }
   }, []);
 

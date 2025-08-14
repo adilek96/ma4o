@@ -37,7 +37,7 @@ const DiscoverScreen = () => {
   const [seed] = useState(() => Math.random());
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]  animate-fadeInUp">
+    <div className="flex flex-col h-[calc(100vh-8rem)]   animate-fadeInUp">
       <div className="flex-1 flex w-full   items-center justify-center mb-6 relative overflow-hidden">
         {/* Background half-icons */}
         <div className="pointer-events-none    absolute inset-0 z-0">
