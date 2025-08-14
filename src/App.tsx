@@ -7,8 +7,13 @@ import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
 // import { useTheme } from "./components/ThemeProvider";
 
-// Создаем fallback объект для разработки
-if (typeof window !== "undefined" && !window.Telegram) {
+// Создаем fallback объект для разработки (только если Telegram API не найден)
+if (typeof window !== "undefined" && !window.Telegram?.WebApp) {
+  console.log(
+    "%c[Telegram]",
+    "color: #FF9800; font-weight: bold;",
+    "Creating fallback Telegram WebApp for development"
+  );
   window.Telegram = {
     WebApp: {
       initData: "",
@@ -47,6 +52,26 @@ function App() {
   }
   // const { resolvedTheme } = useTheme();
   useEffect(() => {
+    // Диагностика
+    console.log(
+      "%c[Diagnostic]",
+      "color: #9C27B0; font-weight: bold;",
+      "Checking Telegram WebApp availability..."
+    );
+
+    console.log("window.Telegram exists:", !!window.Telegram);
+    console.log("window.Telegram.WebApp exists:", !!window.Telegram?.WebApp);
+    console.log(
+      "window.Telegram.WebApp.initData:",
+      window.Telegram?.WebApp?.initData
+    );
+
+    // Проверяем, запущено ли приложение в реальном Telegram
+    const isTelegramWebApp =
+      window.Telegram &&
+      window.Telegram.WebApp &&
+      window.Telegram.WebApp.initData;
+
     if (!window.Telegram?.WebApp) {
       console.warn(
         "%c[Telegram]",
@@ -57,11 +82,26 @@ function App() {
     }
 
     const tg = window.Telegram.WebApp;
+
+    if (isTelegramWebApp) {
+      console.log(
+        "%c[Telegram]",
+        "color: #4CAF50; font-weight: bold;",
+        "Running in REAL Telegram Web App!"
+      );
+    } else {
+      console.log(
+        "%c[Telegram]",
+        "color: #FF9800; font-weight: bold;",
+        "Running in DEVELOPMENT mode (fallback)"
+      );
+    }
+
     if (tg) {
       console.log(
         "%c[InitData]",
         "color: #4CAF50; font-weight: bold;",
-        tg.initData
+        tg.initData || "Empty (development mode)"
       );
       console.log("%c[InitDataUnsafe]", "color: #2196F3; font-weight: bold;");
       console.table(tg.initDataUnsafe);
@@ -86,11 +126,6 @@ function App() {
         "%c[ThemeParams]",
         "color: #00BCD4; font-weight: bold;",
         tg.themeParams
-      );
-      console.log(
-        "%c[InitData]",
-        "color: #4CAF50; font-weight: bold;",
-        tg.initData
       );
 
       // Уведомляем Telegram что приложение готово
