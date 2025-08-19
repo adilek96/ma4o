@@ -22,17 +22,14 @@ function App() {
 
   const sendData = async () => {
     try {
-      const response = await fetch(
-        "http://194.163.151.112:3002/api/v1/auth/tg",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Authorization: `tma ${initDataRaw}`,
-          },
-          body: JSON.stringify({ initData }),
-        }
-      );
+      const response = await fetch("https://api.ma4o.com/api/v1/auth/tg", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Authorization: `tma ${initDataRaw}`,
+        },
+        body: JSON.stringify({ initData }),
+      });
       const data = await response.json();
       console.log(data);
     } catch (error) {
