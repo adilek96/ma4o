@@ -26,6 +26,10 @@ function App() {
         "http://194.163.151.112:3002/api/v1/auth/tg",
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `tma ${initDataRaw}`,
+          },
           body: JSON.stringify({ initData }),
         }
       );
@@ -38,6 +42,7 @@ function App() {
 
   useEffect(() => {
     console.log(initData);
+    console.log("передаем дату на бэк");
     sendData();
   }, []);
 
