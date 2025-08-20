@@ -15,6 +15,7 @@ export function useAuth() {
     console.log('fetchMe: идет проверка аксес токена')
     try {
       const res = await fetch('https://api.ma4o.com/api/v1/user/me', { credentials: 'include' })
+      console.log('fetchMe: ответ от сервера', res)
       if (res.ok) {
         const data = await res.json()
         setUser(data.user)
