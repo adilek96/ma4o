@@ -38,10 +38,19 @@ function App() {
   //   }
   // };
 
+  const debug = async () => {
+    const response = await fetch("https://api.ma4o.com/api/v1/user/debug", {
+      credentials: "include",
+    });
+    const data = await response.json();
+    console.log("debug", data);
+  };
+
   const { user, loading } = useAuth();
 
   useEffect(() => {
     console.log("user", user);
+    debug();
   }, [user]);
 
   // Показываем загрузку пока проверяется авторизация
