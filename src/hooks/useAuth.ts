@@ -17,14 +17,15 @@ export function useAuth() {
     const res = await fetch('https://api.ma4o.com/api/v1/user/me', { credentials: 'include' })
     const data = await res.json()
     console.log('checkAuth: ответ от сервера', data)
-    setUser(data.user)
-    setLoading(false)
-   } catch (error) {
-    try {
+
+    if (data.user) {
+        setUser(data.user)
+        setLoading(false)
+    } else {
         await refresh()
-    } catch (error) {
-        await auth()
     }
+   } catch (error) {
+    return console.log('checkAuth: ошибка', error)
    }
     
   }
@@ -34,8 +35,12 @@ export function useAuth() {
         const res = await fetch('https://api.ma4o.com/api/v1/auth/refresh', { method: 'POST' })
         const data = await res.json()
         console.log('refresh: ответ от сервера', data)
-        setUser(data.user)
-        setLoading(false)
+        if (data.user) {
+            setUser(data.user)
+            setLoading(false)
+        } else {
+            await auth()
+        }
     } catch (error) {
         return console.log('refresh: ошибка', error)
     }
