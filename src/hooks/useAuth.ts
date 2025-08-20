@@ -77,6 +77,7 @@ export function useAuth() {
   }
 
   useEffect(() => {
+    console.log(initData)
     checkAuth()
   }, []);
  
