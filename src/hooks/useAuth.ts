@@ -11,50 +11,65 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const initData = useRawInitData()
 
-
   const checkAuth = async () => {
-   try {
-    const res = await fetch('https://api.ma4o.com/api/v1/user/me', { credentials: 'include' })
-    const data = await res.json()
-    console.log('checkAuth: ответ от сервера', data)
+    try {
+      const res = await fetch('https://api.ma4o.com/api/v1/user/me', { 
+        credentials: 'include' 
+      })
+      const data = await res.json()
+      console.log('checkAuth: ответ от сервера', data)
 
-    if (data.user) {
-        setUser(data.user)
+      if (data.data) {
+        setUser(data.data)
         setLoading(false)
-    } else {
+      } else {
         await refresh()
+      }
+    } catch (error) {
+      console.log('checkAuth: ошибка', error)
+      await refresh()
     }
-   } catch (error) {
-    return console.log('checkAuth: ошибка', error)
-   }
-    
   }
 
   const refresh = async () => {
     try {
-        const res = await fetch('https://api.ma4o.com/api/v1/auth/refresh', { method: 'POST', credentials: 'include' })
-        const data = await res.json()
-        console.log('refresh: ответ от сервера', data)
-        if (data.user) {
-            setUser(data.user)
-            setLoading(false)
-        } else {
-            await auth()
-        }
+      const res = await fetch('https://api.ma4o.com/api/v1/auth/refresh', { 
+        method: 'POST',
+        credentials: 'include'
+      })
+      const data = await res.json()
+      console.log('refresh: ответ от сервера', data)
+      
+      if (res.ok) {
+        // Если refresh успешен, проверяем снова
+        await checkAuth()
+      } else {
+        await auth()
+      }
     } catch (error) {
-        return console.log('refresh: ошибка', error)
+      console.log('refresh: ошибка', error)
+      await auth()
     }
   }
 
   const auth = async () => {
     try {
-        const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ initData }), credentials: 'include' })
-        const data = await res.json()
-        console.log('auth: ответ от сервера', data)
+      const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ initData }),
+        credentials: 'include'
+      })
+      const data = await res.json()
+      console.log('auth: ответ от сервера', data)
+      
+      if (data.user) {
         setUser(data.user)
         setLoading(false)
+      }
     } catch (error) {
-        return console.log('auth: ошибка', error)
+      console.log('auth: ошибка', error)
+      setLoading(false)
     }
   }
 
@@ -62,6 +77,5 @@ export function useAuth() {
     checkAuth()
   }, []);
  
-  
   return { user, loading }
-  }                     
+}
