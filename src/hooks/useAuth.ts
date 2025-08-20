@@ -9,6 +9,7 @@ type User = {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const initData = useRawInitData()
 
   const fetchMe = useCallback(async () => {
     console.log('fetchMe: идет проверка аксес токена')
@@ -19,15 +20,43 @@ export function useAuth() {
         setUser(data.user)
         console.log('fetchMe: аксес токен валид, идет запись в стейт')
         console.log('fetchMe: данные пользователя', data.user)
+        return true
       } else {
         setUser(null)
+        return false
       }
     } catch {
       setUser(null)
+      return false
     } finally {
       setLoading(false)
     }
   }, [])
+
+  const login = useCallback(async () => {
+    if (!(window as any).Telegram?.WebApp) {
+      console.error('Telegram WebApp not found')
+      return false
+    }
+
+    try {
+      const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData }),
+      })
+
+      if (res.ok) {
+        return await fetchMe()
+      } else {
+        console.error('Login failed:', res.status)
+        return false
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      return false
+    }
+  }, [initData, fetchMe])
 
   const refresh = useCallback(async () => {
     console.log('refresh: аксес токен прострочен, идет попытка обновить')
@@ -37,33 +66,15 @@ export function useAuth() {
         credentials: 'include',
       })
       if (res.ok) {
-        await fetchMe()
-        return true
+        return await fetchMe()
       }
-    } catch {
-        await login()
+    } catch (error) {
+      console.error('Refresh error:', error)
     }
-    return false
-  }, [fetchMe])
-
-  const login = useCallback(async () => {
-    if (!(window as any).Telegram?.WebApp) throw new Error('Telegram WebApp not found')
-
-  
-    const initData = useRawInitData();
-
-    const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData }),
-    })
-
-    if (res.ok) {
-      await fetchMe()
-    }
-  }, [fetchMe])
-
-
+    
+    // Если refresh не удался, пробуем login
+    return await login()
+  }, [fetchMe, login])
 
   useEffect(() => {
     (async () => {
@@ -77,7 +88,9 @@ export function useAuth() {
       }
       // если токен протух → пробуем refresh
       const refreshed = await refresh()
-      if (!refreshed) setLoading(false)
+      if (!refreshed) {
+        setLoading(false)
+      }
     })()
   }, [refresh])
 
