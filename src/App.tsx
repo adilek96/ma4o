@@ -19,39 +19,11 @@ function App() {
   }
 
   init();
-  // const initData = useRawInitData();
-
-  // const sendData = async () => {
-  //   try {
-  //     const response = await fetch("https://api.ma4o.com/api/v1/auth/tg", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         // Authorization: `tma ${initDataRaw}`,
-  //       },
-  //       body: JSON.stringify({ initData }),
-  //     });
-  //     const data = await response.json();
-  //     console.log(data);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
-  const debug = async () => {
-    const response = await fetch("https://api.ma4o.com/api/v1/user/debug", {
-      credentials: "include",
-    });
-    console.log("debug: response", response);
-    const data = await response.json();
-    console.log("debug", data);
-  };
 
   const { user, loading } = useAuth();
 
   useEffect(() => {
     console.log("user", user);
-    debug();
   }, [user]);
 
   // Показываем загрузку пока проверяется авторизация
