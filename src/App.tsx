@@ -18,7 +18,13 @@ function App() {
     localStorage.setItem("lang", "en");
   }
 
-  init();
+  useEffect(() => {
+    if ((window as any).Telegram?.WebApp) {
+      init();
+    }
+  }, []);
+
+  // init();
 
   const { user, loading } = useAuth();
 
