@@ -5,22 +5,36 @@ import DiscoverScreen from "./components/DiscoverScreen";
 import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
-import { init } from "@telegram-apps/sdk-react";
+import ProfileSetupForm from "./components/ProfileSetupForm";
+import { init, useRawInitData } from "@telegram-apps/sdk-react";
 import { useAuth } from "./hooks/useAuth";
-// import { useRawInitData } from "@telegram-apps/sdk-react";
 
 type Screen = "discover" | "matches" | "profile" | "editProfile";
 
 function App() {
   const [active, setActive] = useState<Screen>("discover");
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const aplication = import.meta.env.VITE_APPLICATION;
+
   const lang = localStorage.getItem("lang") || "en";
   if (lang !== "ru" && lang !== "en") {
     localStorage.setItem("lang", "en");
   }
 
+  const rawInitData = window.Telegram?.WebApp && useRawInitData();
+
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
+    if (window.Telegram?.WebApp && aplication === "production") {
       init();
+      const parsedInitData = JSON.parse(rawInitData || "{}");
+      const userLanguage = parsedInitData.user?.language_code;
+      if (userLanguage) {
+        if (userLanguage !== "ru" && userLanguage !== "en") {
+          localStorage.setItem("lang", "en");
+        } else {
+          localStorage.setItem("lang", userLanguage);
+        }
+      }
     }
   }, []);
 
@@ -28,7 +42,26 @@ function App() {
 
   useEffect(() => {
     console.log("user", user);
+    // Показываем форму заполнения профиля, если пользователь новый
+    if (user && user.isNew) {
+      setShowProfileSetup(true);
+    }
   }, [user]);
+
+  const handleProfileSetupSubmit = async (profileData: any) => {
+    try {
+      // Здесь будет API запрос для сохранения профиля
+      console.log("Данные профиля:", profileData);
+
+      // После успешного сохранения скрываем форму
+      setShowProfileSetup(false);
+
+      // Можно также обновить данные пользователя в store
+      // или перезагрузить данные пользователя
+    } catch (error) {
+      console.error("Ошибка при сохранении профиля:", error);
+    }
+  };
 
   // Показываем загрузку пока проверяется авторизация
   if (loading) {
@@ -61,6 +94,14 @@ function App() {
           onNavigate={(s) => setActive(s)}
         />
       </div>
+
+      {/* Форма заполнения профиля */}
+      {showProfileSetup && (
+        <ProfileSetupForm
+          onSubmit={handleProfileSetupSubmit}
+          onCancel={() => {}} // Пустая функция, так как отмена недоступна
+        />
+      )}
     </>
   );
 }

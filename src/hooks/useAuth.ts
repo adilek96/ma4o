@@ -4,23 +4,34 @@ import { useRawInitData } from "@telegram-apps/sdk-react";
 type User = {
   id: string
   username?: string
+  isNew?: boolean
 }
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  
+
+
+  const aplication = import.meta.env.VITE_APPLICATION;
+  const initDataDev = import.meta.env.VITE_INIT_DATA_DEV;
+  const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
+  const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
+  const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
+
+
+
+
   // Перемещаем вызов хука на верхний уровень
-  const rawInitData = useRawInitData()
+  const rawInitData = window.Telegram?.WebApp && aplication === "production" ? useRawInitData() : initDataDev
   
   // Определяем initData на основе доступности Telegram WebApp
-  const initData = window.Telegram?.WebApp 
+  const initData = window.Telegram?.WebApp && aplication === "production"
     ? rawInitData as string
-    : "user=%7B%22id%22%3A1290846726%2C%22first_name%22%3A%22%D0%90%D0%B4%D1%8B%D0%BB%D1%8C%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22adilek96%22%2C%22language_code%22%3A%22ru%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2F3I9-pCwjEsRtSojLhVcS_doKuhue_zjauITuDhvWK7Y.svg%22%7D&chat_instance=-8012726405311696390&chat_type=sender&auth_date=1755687280&signature=IYjrleCU5jqNUPDm1AizYsadHeHViACDNvJcTfhpm8foH61so9AnVePzu8exYG-QvETMrleFkZQetckEnho6Cg&hash=dbc10bb56fac1876ebee2a2eb848efe065870b97f27b1ff20a6ad4dbf5153d35"
+    : initDataDev 
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('https://api.ma4o.com/api/v1/user/me', { 
+      const res = await fetch(`${baseUrl}/api/v1/user/me`, { 
         credentials: 'include' 
       })
       const data = await res.json()
@@ -40,7 +51,7 @@ export function useAuth() {
 
   const refresh = async () => {
     try {
-      const res = await fetch('https://api.ma4o.com/api/v1/auth/refresh', { 
+      const res = await fetch(`${baseUrl}/api/v1/auth/refresh`, { 
         method: 'POST',
         credentials: 'include'
       })
@@ -61,7 +72,7 @@ export function useAuth() {
 
   const auth = async () => {
     try {
-        const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', { 
+        const res = await fetch(`${baseUrl}/api/v1/auth/tg`, { 
             method: 'POST', 
             headers: { 
                 'Content-Type': 'application/json',
@@ -73,9 +84,8 @@ export function useAuth() {
       const data = await res.json()
       console.log('auth: ответ от сервера', data)
       
-      if (data.user) {
-        setUser(data.user)
-        setLoading(false)
+      if (data.message === "success") {
+        await checkAuth()
       }
     } catch (error) {
       console.log('auth: ошибка', error)
@@ -84,7 +94,7 @@ export function useAuth() {
   }
 
   useEffect(() => {
-    console.log(initData)
+  
     checkAuth()
   }, [initData]); // Добавляем initData в зависимости
  
