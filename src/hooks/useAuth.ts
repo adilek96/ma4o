@@ -54,12 +54,15 @@ export function useAuth() {
 
   const auth = async () => {
     try {
-      const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ initData }),
-        credentials: 'include'
-      })
+        const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', { 
+            method: 'POST', 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }, 
+            body: JSON.stringify({ initData }),
+            credentials: 'include'
+        })
       const data = await res.json()
       console.log('auth: ответ от сервера', data)
       
