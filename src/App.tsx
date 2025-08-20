@@ -19,7 +19,7 @@ function App() {
   }
 
   useEffect(() => {
-    if ((window as any).Telegram?.WebApp) {
+    if (window.Telegram?.WebApp) {
       init();
     }
   }, []);

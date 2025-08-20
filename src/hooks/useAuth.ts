@@ -11,9 +11,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   let initData: string | undefined
 
-  
+
   useEffect(() => {
-    if ((window as any).Telegram?.WebApp) {
+    if (window.Telegram?.WebApp) {
        initData = useRawInitData() as string
       } else {
         initData = "query_id=AAEGwvBMAAAAAAbC8ExqkwRP&user=%7B%22id%22%3A1290846726%2C%22first_name%22%3A%22%D0%90%D0%B4%D1%8B%D0%BB%D1%8C%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22adilek96%22%2C%22language_code%22%3A%22ru%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2F3I9-pCwjEsRtSojLhVcS_doKuhue_zjauITuDhvWK7Y.svg%22%7D&auth_date=1755600950&signature=k_X7agqcZvlbJXxVb7bYbJeUxnx0aUzA0-rBForp0HIE1-Jbyk-67TD8m99g-B7qBgnm_Ke-Km4tjxxoekI2CA&hash=2728cff3df21b50de6dc5d256ac5fc7d3f87cfcdbb7973bf12ca2b16a5259b0d"
