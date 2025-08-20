@@ -8,6 +8,10 @@ import EditProfileScreen from "./components/EditProfileScreen";
 import ProfileSetupForm from "./components/ProfileSetupForm";
 import { init, useRawInitData } from "@telegram-apps/sdk-react";
 import { useAuth } from "./hooks/useAuth";
+import {
+  createProfileAction,
+  type ProfileData,
+} from "./actions/profileActions";
 
 type Screen = "discover" | "matches" | "profile" | "editProfile";
 
@@ -63,16 +67,21 @@ function App() {
     }
   }, [user]);
 
-  const handleProfileSetupSubmit = async (profileData: any) => {
+  const handleProfileSetupSubmit = async (profileData: ProfileData) => {
     try {
-      // Здесь будет API запрос для сохранения профиля
-      console.log("Данные профиля:", profileData);
+      // Вызываем API для создания профиля
+      const result = await createProfileAction(profileData);
 
-      // После успешного сохранения скрываем форму
-      setShowProfileSetup(false);
-
-      // Можно также обновить данные пользователя в store
-      // или перезагрузить данные пользователя
+      if (result.success) {
+        console.log("Профиль успешно создан:", result.profileId);
+        // После успешного сохранения скрываем форму
+        setShowProfileSetup(false);
+        // Можно также обновить данные пользователя в store
+        // или перезагрузить данные пользователя
+      } else {
+        console.error("Ошибка при создании профиля:", result.error);
+        // Здесь можно добавить обработку ошибок для пользователя
+      }
     } catch (error) {
       console.error("Ошибка при сохранении профиля:", error);
     }
@@ -111,10 +120,11 @@ function App() {
       </div>
 
       {/* Форма заполнения профиля */}
-      {showProfileSetup && (
+      {showProfileSetup && user && (
         <ProfileSetupForm
           onSubmit={handleProfileSetupSubmit}
           onCancel={() => {}} // Пустая функция, так как отмена недоступна
+          userId={user.id}
         />
       )}
     </>

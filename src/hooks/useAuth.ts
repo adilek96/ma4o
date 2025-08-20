@@ -3,8 +3,44 @@ import { useRawInitData } from "@telegram-apps/sdk-react";
 
 type User = {
   id: string
-  username?: string
-  isNew?: boolean
+  telegramId: number
+  username: string
+  firstName: string
+  lastName: string
+  email: string | null
+  isNew: boolean
+  createdAt: string
+  updatedAt: string
+  profile?: {
+    id: string
+    userId: string
+    firstName: string
+    lastName: string
+    birthDate: string
+    gender: string
+    height: number
+    country: string
+    city: string
+    latitude: number
+    longitude: number
+    desiredLocation?: {
+      country: string
+      city: string
+      latitude?: number
+      longitude?: number
+    }
+    seekingGender: string
+    datingGoal: string
+    interests: string[]
+    languages: string[]
+    bio: string
+    smoking?: string
+    drinking?: string
+    isActive: boolean
+    isVerified: boolean
+    createdAt: string
+    updatedAt: string
+  }
 }
 
 export function useAuth() {
@@ -41,7 +77,11 @@ export function useAuth() {
         setUser(data.data)
         setLoading(false)
       } else {
-        await refresh()
+        if(data.message === "unauthorized") {
+            await refresh()
+        } else {
+          await auth()
+        }
       }
     } catch (error) {
       console.log('checkAuth: ошибка', error)

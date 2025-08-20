@@ -3,11 +3,15 @@ import { useTranslation } from "react-i18next";
 import {
   createProfileAction,
   type ProfileData,
+  DATING_GOALS,
+  SMOKING_OPTIONS,
+  DRINKING_OPTIONS,
 } from "../actions/profileActions";
 
 interface ProfileSetupFormProps {
   onSubmit: (data: ProfileData) => void;
   onCancel: () => void;
+  userId: string;
 }
 
 interface Country {
@@ -57,21 +61,36 @@ const languages = [
   "nl",
 ];
 
-export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
+export default function ProfileSetupForm({
+  onSubmit,
+  userId,
+}: ProfileSetupFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProfileData>({
+    userId: userId,
+    // Этап 1: Основная информация
     firstName: "",
     lastName: "",
     birthDate: "",
+    gender: "",
+    height: 170,
+    // Этап 2: Локация
     country: "",
     city: "",
     location: undefined,
-    gender: "",
+    desiredLocation: {
+      country: "",
+      city: "",
+    } as { country: string; city: string },
+    // Этап 3: Предпочтения
     seekingGender: "",
-    height: 170,
+    datingGoal: "",
     interests: [],
-    bio: "",
     languages: [],
+    // Этап 4: Дополнительная информация
+    bio: "",
+    smoking: undefined,
+    drinking: undefined,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [countries, setCountries] = useState<Country[]>([]);
@@ -153,17 +172,24 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // Валидация userId (проверяем на всех этапах)
+    if (!formData.userId) {
+      newErrors.userId = t("form.validation.userIdRequired");
+    }
+
     if (step === 1) {
+      // Валидация основной информации
       if (!formData.firstName.trim())
         newErrors.firstName = t("form.validation.firstNameRequired");
       if (!formData.lastName.trim())
         newErrors.lastName = t("form.validation.lastNameRequired");
       if (!formData.birthDate)
         newErrors.birthDate = t("form.validation.birthDateRequired");
-      if (!formData.country.trim())
-        newErrors.country = t("form.validation.countryRequired");
-      if (!formData.city.trim())
-        newErrors.city = t("form.validation.cityRequired");
+      if (!formData.gender)
+        newErrors.gender = t("form.validation.genderRequired");
+      if (formData.height < 120 || formData.height > 210) {
+        newErrors.height = t("form.validation.heightRequired");
+      }
 
       // Проверка возраста (минимум 18 лет)
       if (formData.birthDate) {
@@ -177,19 +203,39 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
     }
 
     if (step === 2) {
-      if (!formData.gender)
-        newErrors.gender = t("form.validation.genderRequired");
-      if (!formData.seekingGender)
-        newErrors.seekingGender = t("form.validation.seekingGenderRequired");
-      if (formData.height < 120 || formData.height > 210) {
-        newErrors.height = t("form.validation.heightRequired");
+      // Валидация локации
+      if (!formData.country.trim())
+        newErrors.country = t("form.validation.countryRequired");
+      if (!formData.city.trim())
+        newErrors.city = t("form.validation.cityRequired");
+      if (!formData.desiredLocation.country.trim()) {
+        newErrors.desiredLocationCountry = t(
+          "form.validation.desiredLocationCountryRequired"
+        );
       }
-      if (formData.interests.length === 0) {
-        newErrors.interests = t("form.validation.interestsRequired");
+      if (!formData.desiredLocation.city.trim()) {
+        newErrors.desiredLocationCity = t(
+          "form.validation.desiredLocationCityRequired"
+        );
       }
     }
 
     if (step === 3) {
+      // Валидация предпочтений
+      if (!formData.seekingGender)
+        newErrors.seekingGender = t("form.validation.seekingGenderRequired");
+      if (!formData.datingGoal)
+        newErrors.datingGoal = t("form.validation.datingGoalRequired");
+      if (formData.interests.length === 0) {
+        newErrors.interests = t("form.validation.interestsRequired");
+      }
+      if (formData.languages.length === 0) {
+        newErrors.languages = t("form.validation.languagesRequired");
+      }
+    }
+
+    if (step === 4) {
+      // Валидация дополнительной информации
       if (!formData.bio.trim())
         newErrors.bio = t("form.validation.bioRequired");
       if (formData.bio.length < 10) {
@@ -197,9 +243,6 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
       }
       if (formData.bio.length > 500) {
         newErrors.bio = t("form.validation.bioMaxLength");
-      }
-      if (formData.languages.length === 0) {
-        newErrors.languages = t("form.validation.languagesRequired");
       }
     }
 
@@ -209,7 +252,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep < 3) {
+      if (currentStep < 4) {
         setCurrentStep(currentStep + 1);
       } else {
         // Используем оптимистичное обновление при отправке формы
@@ -251,6 +294,29 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
     }
   };
 
+  const handleDesiredLocationChange = (
+    field: "country" | "city",
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      desiredLocation: {
+        ...prev.desiredLocation,
+        [field]: value,
+      } as { country: string; city: string },
+    }));
+    // Очищаем ошибку при изменении поля
+    const errorKey =
+      field === "country" ? "desiredLocationCountry" : "desiredLocationCity";
+    if (errors[errorKey]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
+    }
+  };
+
   const handleInterestToggle = (interest: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -269,7 +335,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
-      alert(t("form.step1.locationNotSupported"));
+      alert(t("form.step2.locationNotSupported"));
       return;
     }
 
@@ -287,16 +353,16 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
         console.error("Ошибка получения локации:", error);
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            alert(t("form.step1.locationPermissionDenied"));
+            alert(t("form.step2.locationPermissionDenied"));
             break;
           case error.POSITION_UNAVAILABLE:
-            alert(t("form.step1.locationUnavailable"));
+            alert(t("form.step2.locationUnavailable"));
             break;
           case error.TIMEOUT:
-            alert(t("form.step1.locationTimeout"));
+            alert(t("form.step2.locationTimeout"));
             break;
           default:
-            alert(t("form.step1.locationError"));
+            alert(t("form.step2.locationError"));
         }
       },
       {
@@ -307,6 +373,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
     );
   };
 
+  // Этап 1: Основная информация
   const renderStep1 = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
@@ -377,7 +444,72 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step1.country")} *
+          {t("form.step1.gender")} *
+        </label>
+        <div className="space-y-3">
+          {["male", "female", "other"].map((gender) => (
+            <label
+              key={gender}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="gender"
+                value={gender}
+                checked={formData.gender === gender}
+                onChange={(e) => handleInputChange("gender", e.target.value)}
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="capitalize text-foreground">
+                {t(`form.step1.${gender}`)}
+              </span>
+            </label>
+          ))}
+        </div>
+        {errors.gender && (
+          <p className="text-destructive text-sm mt-2">{errors.gender}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step1.height")} *
+        </label>
+        <div className="p-4 rounded-2xl border-2 border-border component-bg">
+          <div className="flex items-center space-x-4">
+            <input
+              type="range"
+              name="height"
+              min="120"
+              max="210"
+              value={formData.height}
+              onChange={(e) =>
+                handleInputChange("height", parseInt(e.target.value))
+              }
+              className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+            />
+            <span className="text-lg font-bold text-foreground min-w-[4rem] text-center">
+              {formData.height} см
+            </span>
+          </div>
+        </div>
+        {errors.height && (
+          <p className="text-destructive text-sm mt-2">{errors.height}</p>
+        )}
+      </div>
+    </div>
+  );
+
+  // Этап 2: Локация
+  const renderStep2 = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
+        {t("form.step2.title")}
+      </h2>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step2.country")} *
         </label>
         <div className="relative">
           <select
@@ -393,8 +525,8 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
           >
             <option value="">
               {loadingCountries
-                ? t("form.step1.countryLoading")
-                : t("form.step1.countrySelect")}
+                ? t("form.step2.countryLoading")
+                : t("form.step2.countrySelect")}
             </option>
             {countries.map((country) => (
               <option key={country.code} value={country.code}>
@@ -421,7 +553,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step1.city")} *
+          {t("form.step2.city")} *
         </label>
         <input
           type="text"
@@ -433,7 +565,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
               ? "border-destructive focus:border-destructive focus:ring-destructive/20"
               : "border-border focus:border-border focus:ring-border/20 component-bg"
           }`}
-          placeholder={t("form.step1.cityPlaceholder")}
+          placeholder={t("form.step2.cityPlaceholder")}
         />
         {errors.city && (
           <p className="text-destructive text-sm mt-2">{errors.city}</p>
@@ -442,7 +574,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step1.location")}
+          {t("form.step2.location")}
         </label>
         <div className="space-y-3">
           <button
@@ -471,14 +603,14 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
             </svg>
             <span>
               {formData.location
-                ? t("form.step1.locationReceived")
-                : t("form.step1.getLocation")}
+                ? t("form.step2.locationReceived")
+                : t("form.step2.getLocation")}
             </span>
           </button>
           {formData.location && (
             <div className="p-3 rounded-2xl border-2 border-green-500/20 component-bg bg-green-500/5">
               <p className="text-sm text-green-600 dark:text-green-400">
-                {t("form.step1.locationSuccess")}
+                {t("form.step2.locationSuccess")}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {formData.location.latitude.toFixed(6)},{" "}
@@ -488,47 +620,100 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
           )}
         </div>
       </div>
+
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
+          {t("form.step2.desiredLocationTitle")}
+        </h3>
+
+        <div>
+          <label className="block text-sm font-medium mb-3 text-foreground">
+            {t("form.step2.desiredCountry")} *
+          </label>
+          <div className="relative">
+            <select
+              name="desiredLocationCountry"
+              value={formData.desiredLocation.country}
+              onChange={(e) =>
+                handleDesiredLocationChange("country", e.target.value)
+              }
+              className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 appearance-none ${
+                errors.desiredLocationCountry
+                  ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                  : "border-border focus:border-border focus:ring-border/20 component-bg"
+              }`}
+              disabled={loadingCountries}
+            >
+              <option value="">
+                {loadingCountries
+                  ? t("form.step2.countryLoading")
+                  : t("form.step2.desiredCountrySelect")}
+              </option>
+              {countries.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+            {formData.desiredLocation.country && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <img
+                  src={`https://flagcdn.com/16x12/${formData.desiredLocation.country}.png`}
+                  alt={`Флаг ${
+                    countries.find(
+                      (c) => c.code === formData.desiredLocation.country
+                    )?.name || ""
+                  }`}
+                  className="w-4 h-3 object-cover rounded-sm"
+                />
+              </div>
+            )}
+          </div>
+          {errors.desiredLocationCountry && (
+            <p className="text-destructive text-sm mt-2">
+              {errors.desiredLocationCountry}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium mb-3 text-foreground">
+            {t("form.step2.desiredCity")} *
+          </label>
+          <input
+            type="text"
+            name="desiredLocationCity"
+            value={formData.desiredLocation.city}
+            onChange={(e) =>
+              handleDesiredLocationChange("city", e.target.value)
+            }
+            className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
+              errors.desiredLocationCity
+                ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                : "border-border focus:border-border focus:ring-border/20 component-bg"
+            }`}
+            placeholder={t("form.step2.desiredCityPlaceholder")}
+          />
+          {errors.desiredLocationCity && (
+            <p className="text-destructive text-sm mt-2">
+              {errors.desiredLocationCity}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 
-  const renderStep2 = () => (
+  // Этап 3: Предпочтения
+  const renderStep3 = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
-        {t("form.step2.title")}
+        {t("form.step3.title")}
       </h2>
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step2.gender")} *
-        </label>
-        <div className="space-y-3">
-          {["male", "female", "other"].map((gender) => (
-            <label
-              key={gender}
-              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="gender"
-                value={gender}
-                checked={formData.gender === gender}
-                onChange={(e) => handleInputChange("gender", e.target.value)}
-                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
-              />
-              <span className="capitalize text-foreground">
-                {t(`form.step2.${gender}`)}
-              </span>
-            </label>
-          ))}
-        </div>
-        {errors.gender && (
-          <p className="text-destructive text-sm mt-2">{errors.gender}</p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step2.seekingGender")} *
+          {t("form.step3.seekingGender")} *
         </label>
         <div className="space-y-3">
           {["male", "female", "any"].map((seekingGender) => (
@@ -548,7 +733,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
               />
               <span className="capitalize text-foreground">
                 {t(
-                  `form.step2.seeking${
+                  `form.step3.seeking${
                     seekingGender.charAt(0).toUpperCase() +
                     seekingGender.slice(1)
                   }`
@@ -566,34 +751,36 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step2.height")} *
+          {t("form.step3.datingGoal")} *
         </label>
-        <div className="p-4 rounded-2xl border-2 border-border component-bg">
-          <div className="flex items-center space-x-4">
-            <input
-              type="range"
-              name="height"
-              min="120"
-              max="210"
-              value={formData.height}
-              onChange={(e) =>
-                handleInputChange("height", parseInt(e.target.value))
-              }
-              className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-            />
-            <span className="text-lg font-bold text-foreground min-w-[4rem] text-center">
-              {formData.height} см
-            </span>
-          </div>
+        <div className="space-y-3">
+          {DATING_GOALS.map((goal) => (
+            <label
+              key={goal.value}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="datingGoal"
+                value={goal.value}
+                checked={formData.datingGoal === goal.value}
+                onChange={(e) =>
+                  handleInputChange("datingGoal", e.target.value)
+                }
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="text-foreground">{goal.label}</span>
+            </label>
+          ))}
         </div>
-        {errors.height && (
-          <p className="text-destructive text-sm mt-2">{errors.height}</p>
+        {errors.datingGoal && (
+          <p className="text-destructive text-sm mt-2">{errors.datingGoal}</p>
         )}
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step2.interests")} *
+          {t("form.step3.interests")} *
         </label>
         <div className="grid grid-cols-2 gap-3">
           {interests.map((interest) => (
@@ -619,41 +806,6 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
         </div>
         {errors.interests && (
           <p className="text-destructive text-sm mt-2">{errors.interests}</p>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
-        {t("form.step3.title")}
-      </h2>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step3.bio")} *
-        </label>
-        <textarea
-          name="bio"
-          value={formData.bio}
-          onChange={(e) => handleInputChange("bio", e.target.value)}
-          rows={6}
-          maxLength={500}
-          className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 resize-none transition-all duration-200 ${
-            errors.bio
-              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-              : "border-border focus:border-border focus:ring-border/20 component-bg"
-          }`}
-          placeholder={t("form.step3.bioPlaceholder")}
-        />
-        <div className="flex justify-between text-sm text-muted-foreground mt-2">
-          <span>
-            {formData.bio.length}/500 {t("form.step3.bioCharacters")}
-          </span>
-        </div>
-        {errors.bio && (
-          <p className="text-destructive text-sm mt-2">{errors.bio}</p>
         )}
       </div>
 
@@ -705,9 +857,93 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
     </div>
   );
 
+  // Этап 4: Дополнительная информация
+  const renderStep4 = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
+        {t("form.step4.title")}
+      </h2>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step4.bio")} *
+        </label>
+        <textarea
+          name="bio"
+          value={formData.bio}
+          onChange={(e) => handleInputChange("bio", e.target.value)}
+          rows={6}
+          maxLength={500}
+          className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 resize-none transition-all duration-200 ${
+            errors.bio
+              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+              : "border-border focus:border-border focus:ring-border/20 component-bg"
+          }`}
+          placeholder={t("form.step4.bioPlaceholder")}
+        />
+        <div className="flex justify-between text-sm text-muted-foreground mt-2">
+          <span>
+            {formData.bio.length}/500 {t("form.step4.bioCharacters")}
+          </span>
+        </div>
+        {errors.bio && (
+          <p className="text-destructive text-sm mt-2">{errors.bio}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step4.smoking")}
+        </label>
+        <div className="space-y-3">
+          {SMOKING_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="smoking"
+                value={option.value}
+                checked={formData.smoking === option.value}
+                onChange={(e) => handleInputChange("smoking", e.target.value)}
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="text-foreground">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step4.drinking")}
+        </label>
+        <div className="space-y-3">
+          {DRINKING_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="drinking"
+                value={option.value}
+                checked={formData.drinking === option.value}
+                onChange={(e) => handleInputChange("drinking", e.target.value)}
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="text-foreground">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-300"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-start justify-center py-24 px-4 z-40 animate-in fade-in duration-300"
       onClick={(e) => {
         // Предотвращаем закрытие формы при клике вне её области
         e.stopPropagation();
@@ -720,14 +956,14 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
             <div className="flex justify-between text-sm text-muted-foreground mb-3">
               <span>
                 {t("form.navigation.step")} {currentStep}{" "}
-                {t("form.navigation.of")} 3
+                {t("form.navigation.of")} 4
               </span>
-              <span>{Math.round((currentStep / 3) * 100)}%</span>
+              <span>{Math.round((currentStep / 4) * 100)}%</span>
             </div>
             <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
               <div
                 className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${(currentStep / 3) * 100}%` }}
+                style={{ width: `${(currentStep / 4) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -736,6 +972,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
+          {currentStep === 4 && renderStep4()}
 
           {/* Кнопки навигации */}
           <div className="flex justify-between mt-8 gap-4">
@@ -758,7 +995,7 @@ export default function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
                   <span>{t("form.navigation.saving")}</span>
                 </div>
-              ) : currentStep === 3 ? (
+              ) : currentStep === 4 ? (
                 t("form.navigation.finish")
               ) : (
                 t("form.navigation.next")
