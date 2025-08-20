@@ -24,8 +24,6 @@ function App() {
     }
   }, []);
 
-  // init();
-
   const { user, loading } = useAuth();
 
   useEffect(() => {
