@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import BottomNavigation from "./components/BottomNavigation";
 import Header from "./components/Header";
 import DiscoverScreen from "./components/DiscoverScreen";
@@ -6,7 +6,8 @@ import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
 import { init } from "@telegram-apps/sdk-react";
-import { useRawInitData } from "@telegram-apps/sdk-react";
+import { useAuth } from "./hooks/useAuth";
+// import { useRawInitData } from "@telegram-apps/sdk-react";
 
 type Screen = "discover" | "matches" | "profile" | "editProfile";
 
@@ -18,30 +19,26 @@ function App() {
   }
 
   init();
-  const initData = useRawInitData();
+  // const initData = useRawInitData();
 
-  const sendData = async () => {
-    try {
-      const response = await fetch("https://api.ma4o.com/api/v1/auth/tg", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `tma ${initDataRaw}`,
-        },
-        body: JSON.stringify({ initData }),
-      });
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const sendData = async () => {
+  //   try {
+  //     const response = await fetch("https://api.ma4o.com/api/v1/auth/tg", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         // Authorization: `tma ${initDataRaw}`,
+  //       },
+  //       body: JSON.stringify({ initData }),
+  //     });
+  //     const data = await response.json();
+  //     console.log(data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
-  useEffect(() => {
-    console.log(initData);
-    console.log("передаем дату на бэк");
-    sendData();
-  }, []);
+  useAuth();
 
   return (
     <>
