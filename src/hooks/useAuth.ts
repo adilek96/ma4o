@@ -40,6 +40,8 @@ export function useAuth() {
     }
 
     try {
+      console.log('login: идет попытка авторизации')
+      console.log('login: initData', initData)
       const res = await fetch('https://api.ma4o.com/api/v1/auth/tg', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

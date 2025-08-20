@@ -41,7 +41,7 @@ function App() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    console.log(user);
+    console.log("user", user);
   }, [user]);
 
   // Показываем загрузку пока проверяется авторизация
