@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BottomNavigation from "./components/BottomNavigation";
 import Header from "./components/Header";
 import DiscoverScreen from "./components/DiscoverScreen";
@@ -39,6 +39,10 @@ function App() {
   // };
 
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    console.log(user);
+  }, [user]);
 
   // Показываем загрузку пока проверяется авторизация
   if (loading) {
