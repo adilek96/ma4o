@@ -42,6 +42,7 @@ function App() {
     const response = await fetch("https://api.ma4o.com/api/v1/user/debug", {
       credentials: "include",
     });
+    console.log("debug: response", response);
     const data = await response.json();
     console.log("debug", data);
   };
