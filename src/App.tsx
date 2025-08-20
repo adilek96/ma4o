@@ -27,17 +27,22 @@ function App() {
     if (window.Telegram?.WebApp && aplication === "production") {
       init();
       try {
-        // rawInitData содержит URL-encoded строку, нужно её декодировать
-        const decodedInitData = rawInitData
-          ? decodeURIComponent(rawInitData)
-          : "{}";
-        const parsedInitData = JSON.parse(decodedInitData);
-        const userLanguage = parsedInitData.user?.language_code;
-        if (userLanguage) {
-          if (userLanguage !== "ru" && userLanguage !== "en") {
-            localStorage.setItem("lang", "en");
-          } else {
-            localStorage.setItem("lang", userLanguage);
+        // rawInitData содержит URL query string, нужно её распарсить
+        if (rawInitData) {
+          const urlParams = new URLSearchParams(rawInitData);
+          const userParam = urlParams.get("user");
+
+          if (userParam) {
+            const userData = JSON.parse(userParam);
+            const userLanguage = userData.language_code;
+
+            if (userLanguage) {
+              if (userLanguage !== "ru" && userLanguage !== "en") {
+                localStorage.setItem("lang", "en");
+              } else {
+                localStorage.setItem("lang", userLanguage);
+              }
+            }
           }
         }
       } catch (error) {
