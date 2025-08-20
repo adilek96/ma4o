@@ -40,7 +40,9 @@ export function useAuth() {
         await fetchMe()
         return true
       }
-    } catch {}
+    } catch {
+        await login()
+    }
     return false
   }, [fetchMe])
 
@@ -64,7 +66,7 @@ export function useAuth() {
 
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       setLoading(true)
       const res = await fetch('https://api.ma4o.com/api/v1/user/me', { credentials: 'include' })
       if (res.ok) {
