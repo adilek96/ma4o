@@ -9,17 +9,14 @@ type User = {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  let initData: string | undefined
-
-
-  useEffect(() => {
-    if (window.Telegram?.WebApp) {
-       initData = useRawInitData() as string
-      } else {
-        console.log("initData: undefined")
-        initData = "user=%7B%22id%22%3A1290846726%2C%22first_name%22%3A%22%D0%90%D0%B4%D1%8B%D0%BB%D1%8C%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22adilek96%22%2C%22language_code%22%3A%22ru%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2F3I9-pCwjEsRtSojLhVcS_doKuhue_zjauITuDhvWK7Y.svg%22%7D&chat_instance=-8012726405311696390&chat_type=sender&auth_date=1755687280&signature=IYjrleCU5jqNUPDm1AizYsadHeHViACDNvJcTfhpm8foH61so9AnVePzu8exYG-QvETMrleFkZQetckEnho6Cg&hash=dbc10bb56fac1876ebee2a2eb848efe065870b97f27b1ff20a6ad4dbf5153d35"
-      }
-  }, [])
+  
+  // Перемещаем вызов хука на верхний уровень
+  const rawInitData = useRawInitData()
+  
+  // Определяем initData на основе доступности Telegram WebApp
+  const initData = window.Telegram?.WebApp 
+    ? rawInitData as string
+    : "user=%7B%22id%22%3A1290846726%2C%22first_name%22%3A%22%D0%90%D0%B4%D1%8B%D0%BB%D1%8C%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22adilek96%22%2C%22language_code%22%3A%22ru%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2F3I9-pCwjEsRtSojLhVcS_doKuhue_zjauITuDhvWK7Y.svg%22%7D&chat_instance=-8012726405311696390&chat_type=sender&auth_date=1755687280&signature=IYjrleCU5jqNUPDm1AizYsadHeHViACDNvJcTfhpm8foH61so9AnVePzu8exYG-QvETMrleFkZQetckEnho6Cg&hash=dbc10bb56fac1876ebee2a2eb848efe065870b97f27b1ff20a6ad4dbf5153d35"
 
   const checkAuth = async () => {
     try {
@@ -89,7 +86,7 @@ export function useAuth() {
   useEffect(() => {
     console.log(initData)
     checkAuth()
-  }, []);
+  }, [initData]); // Добавляем initData в зависимости
  
   return { user, loading }
 }
