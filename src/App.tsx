@@ -26,14 +26,24 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp && aplication === "production") {
       init();
-      const parsedInitData = JSON.parse(rawInitData || "{}");
-      const userLanguage = parsedInitData.user?.language_code;
-      if (userLanguage) {
-        if (userLanguage !== "ru" && userLanguage !== "en") {
-          localStorage.setItem("lang", "en");
-        } else {
-          localStorage.setItem("lang", userLanguage);
+      try {
+        // rawInitData содержит URL-encoded строку, нужно её декодировать
+        const decodedInitData = rawInitData
+          ? decodeURIComponent(rawInitData)
+          : "{}";
+        const parsedInitData = JSON.parse(decodedInitData);
+        const userLanguage = parsedInitData.user?.language_code;
+        if (userLanguage) {
+          if (userLanguage !== "ru" && userLanguage !== "en") {
+            localStorage.setItem("lang", "en");
+          } else {
+            localStorage.setItem("lang", userLanguage);
+          }
         }
+      } catch (error) {
+        console.error("Ошибка при парсинге initData:", error);
+        // В случае ошибки используем язык по умолчанию
+        localStorage.setItem("lang", "en");
       }
     }
   }, []);
