@@ -48,6 +48,7 @@ export function useAuth() {
         body: JSON.stringify({ initData }),
       })
 
+      console.log('login: ответ от сервера', res)
       if (res.ok) {
         return await fetchMe()
       } else {
@@ -94,7 +95,7 @@ export function useAuth() {
         setLoading(false)
       }
     })()
-  }, [refresh])
+  }, [refresh, login])
 
   return { user, loading, login }
 }
