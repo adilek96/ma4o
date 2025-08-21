@@ -28,14 +28,16 @@ type User = {
          preferredLocation: string
      seekingGender: string
      datingGoal: string
-     minAge: number
-     maxAge: number
+     minAge: number | ""
+     maxAge: number | ""
      interests: string[]
     languages: string[]
-    bio: string
-    smoking?: string
-    drinking?: string
-    isActive: boolean
+         bio: string
+     smoking?: string
+     drinking?: string
+     education?: string
+     occupation?: string
+     isActive: boolean
     isVerified: boolean
     createdAt: string
     updatedAt: string
@@ -76,7 +78,8 @@ export function useAuth() {
         setUser(data.data)
         setLoading(false)
       } else {
-        if(data.message === "unauthorized") {
+        
+        if(data.error === "Unauthorized") {
             await refresh()
         } else {
           await auth()

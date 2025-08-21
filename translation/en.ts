@@ -80,9 +80,27 @@ export const en = {
       "step3": {
         "title": "Preferences",
                  "seekingGender": "Seeking",
-         "seekingMale": "Men",
-         "seekingFemale": "Women",
-         "seekingAny": "Anyone",
+                 "seekingMale": "Men",
+        "seekingFemale": "Women",
+        "seekingAny": "Anyone",
+        "education": {
+          "HIGH_SCHOOL": "High School",
+          "COLLEGE": "College",
+          "BACHELOR": "Bachelor's Degree",
+          "MASTER": "Master's Degree",
+          "PHD": "PhD",
+          "SELF_TAUGHT": "Self-taught",
+          "OTHER": "Other"
+        },
+        "occupation": {
+          "STUDENT": "Student",
+          "EMPLOYEE": "Employee",
+          "FREELANCER": "Freelancer",
+          "ENTREPRENEUR": "Entrepreneur",
+          "UNEMPLOYED": "Unemployed",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        },
          "datingGoal": "Dating Goal",
          "agePreferences": "Age Preferences",
          "minAge": "Minimum Age",
@@ -97,7 +115,9 @@ export const en = {
         "bioPlaceholder": "Tell us about yourself, your interests, goals...",
         "bioCharacters": "characters",
         "smoking": "Smoking",
-        "drinking": "Drinking"
+        "drinking": "Drinking",
+        "education": "Education",
+        "occupation": "Occupation"
       },
       "navigation": {
         "back": "Back",
@@ -150,8 +170,10 @@ export const en = {
       "locationUpdated": "Location updated",
       "locationError": "Error updating location",
       "noLanguages": "No languages added",
-      "noSmoking": "Not specified",
-      "noDrinking": "Not specified",
+              "noSmoking": "Not specified",
+        "noDrinking": "Not specified",
+        "education": "Education:",
+        "occupation": "Occupation:",
       "getLocation": "Get my location",
       "locationReceived": "Location received",
       "locationSuccess": "Location successfully obtained",

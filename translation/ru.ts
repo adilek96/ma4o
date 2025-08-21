@@ -80,9 +80,27 @@ export const ru = {
     "step3": {
       "title": "Предпочтения",
              "seekingGender": "Ищу",
-       "seekingMale": "Мужчин",
-       "seekingFemale": "Женщин",
-       "seekingAny": "Без разницы",
+            "seekingMale": "Мужчин",
+     "seekingFemale": "Женщин",
+     "seekingAny": "Без разницы",
+     "education": {
+       "HIGH_SCHOOL": "Среднее образование",
+       "COLLEGE": "Колледж",
+       "BACHELOR": "Бакалавриат",
+       "MASTER": "Магистратура",
+       "PHD": "Докторантура",
+       "SELF_TAUGHT": "Самообразование",
+       "OTHER": "Другое"
+     },
+     "occupation": {
+       "STUDENT": "Студент",
+       "EMPLOYEE": "Сотрудник",
+       "FREELANCER": "Фрилансер",
+       "ENTREPRENEUR": "Предприниматель",
+       "UNEMPLOYED": "Безработный",
+       "RETIRED": "Пенсионер",
+       "OTHER": "Другое"
+     },
        "datingGoal": "Цель знакомства",
        "agePreferences": "Предпочтения по возрасту",
        "minAge": "Минимальный возраст",
@@ -96,8 +114,10 @@ export const ru = {
       "bio": "Био",
       "bioPlaceholder": "Расскажите о себе, своих интересах, целях...",
       "bioCharacters": "символов",
-      "smoking": "Отношение к курению",
-      "drinking": "Отношение к алкоголю"
+             "smoking": "Отношение к курению",
+       "drinking": "Отношение к алкоголю",
+       "education": "Образование",
+       "occupation": "Род деятельности"
     },
     "navigation": {
       "back": "Назад",
@@ -150,8 +170,10 @@ export const ru = {
     "locationUpdated": "Местоположение обновлено",
     "locationError": "Ошибка обновления местоположения",
     "noLanguages": "Языки не добавлены",
-    "noSmoking": "Не указано",
-    "noDrinking": "Не указано",
+         "noSmoking": "Не указано",
+     "noDrinking": "Не указано",
+     "education": "Образование:",
+     "occupation": "Род деятельности:",
     "getLocation": "Получить мою локацию",
     "locationReceived": "Локация получена",
     "locationSuccess": "Локация успешно получена",

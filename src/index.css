@@ -171,6 +171,21 @@
   }
 }
 
+/* Яркое свечение для прогресс-бара */
+.progress-neon {
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.9), 0 0 20px rgba(168, 85, 247, 0.7), 0 0 30px rgba(168, 85, 247, 0.5);
+  animation: progressNeonPulse 3s ease-in-out infinite;
+}
+
+@keyframes progressNeonPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.9), 0 0 20px rgba(168, 85, 247, 0.7), 0 0 30px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 1), 0 0 30px rgba(168, 85, 247, 0.8), 0 0 45px rgba(168, 85, 247, 0.6);
+  }
+}
+
 
 .glass-effect {
   background: var(--glass-bg);

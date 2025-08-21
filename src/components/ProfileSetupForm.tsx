@@ -7,6 +7,8 @@ import {
   SMOKING_OPTIONS,
   DRINKING_OPTIONS,
   PREFERRED_LOCATION_OPTIONS,
+  EDUCATION_OPTIONS,
+  OCCUPATION_OPTIONS,
 } from "../actions/profileActions";
 
 interface ProfileSetupFormProps {
@@ -83,14 +85,16 @@ export default function ProfileSetupForm({
     // Этап 3: Предпочтения
     seekingGender: "",
     datingGoal: "",
-    minAge: 18,
-    maxAge: 50,
+    minAge: "",
+    maxAge: "",
     interests: [],
     languages: [],
     // Этап 4: Дополнительная информация
     bio: "",
     smoking: undefined,
     drinking: undefined,
+    education: undefined,
+    occupation: undefined,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [countries, setCountries] = useState<Country[]>([]);
@@ -207,13 +211,17 @@ export default function ProfileSetupForm({
         newErrors.seekingGender = t("form.validation.seekingGenderRequired");
       if (!formData.datingGoal)
         newErrors.datingGoal = t("form.validation.datingGoalRequired");
-      if (formData.minAge < 18 || formData.minAge > 100) {
+      if (!formData.minAge || formData.minAge < 18 || formData.minAge > 100) {
         newErrors.minAge = t("form.validation.minAgeRequired");
       }
-      if (formData.maxAge < 18 || formData.maxAge > 100) {
+      if (!formData.maxAge || formData.maxAge < 18 || formData.maxAge > 100) {
         newErrors.maxAge = t("form.validation.maxAgeRequired");
       }
-      if (formData.minAge > formData.maxAge) {
+      if (
+        formData.minAge &&
+        formData.maxAge &&
+        formData.minAge > formData.maxAge
+      ) {
         newErrors.maxAge = t("form.validation.ageRangeInvalid");
       }
       if (formData.interests.length === 0) {
@@ -794,9 +802,17 @@ export default function ProfileSetupForm({
               type="number"
               name="minAge"
               value={formData.minAge}
-              onChange={(e) =>
-                handleInputChange("minAge", parseInt(e.target.value) || 18)
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "") {
+                  handleInputChange("minAge", "");
+                } else {
+                  const numValue = parseInt(value);
+                  if (!isNaN(numValue)) {
+                    handleInputChange("minAge", numValue);
+                  }
+                }
+              }}
               min="18"
               max="100"
               className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
@@ -817,9 +833,17 @@ export default function ProfileSetupForm({
               type="number"
               name="maxAge"
               value={formData.maxAge}
-              onChange={(e) =>
-                handleInputChange("maxAge", parseInt(e.target.value) || 50)
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "") {
+                  handleInputChange("maxAge", "");
+                } else {
+                  const numValue = parseInt(value);
+                  if (!isNaN(numValue)) {
+                    handleInputChange("maxAge", numValue);
+                  }
+                }
+              }}
               min="18"
               max="100"
               className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
@@ -835,8 +859,8 @@ export default function ProfileSetupForm({
         </div>
         <div className="mt-3 p-3 rounded-2xl border-2 border-border component-bg">
           <p className="text-sm text-foreground/70">
-            {t("form.step3.ageRange")}: {formData.minAge} - {formData.maxAge}{" "}
-            {t("profile.age")}
+            {t("form.step3.ageRange")}: {formData.minAge || "—"} -{" "}
+            {formData.maxAge || "—"} {t("profile.age")}
           </p>
         </div>
       </div>
@@ -1001,6 +1025,56 @@ export default function ProfileSetupForm({
           ))}
         </div>
       </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step4.education")}
+        </label>
+        <div className="space-y-3">
+          {EDUCATION_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="education"
+                value={option.value}
+                checked={formData.education === option.value}
+                onChange={(e) => handleInputChange("education", e.target.value)}
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="text-foreground">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step4.occupation")}
+        </label>
+        <div className="space-y-3">
+          {OCCUPATION_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="occupation"
+                value={option.value}
+                checked={formData.occupation === option.value}
+                onChange={(e) =>
+                  handleInputChange("occupation", e.target.value)
+                }
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="text-foreground">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
@@ -1046,7 +1120,7 @@ export default function ProfileSetupForm({
         {/* Прогресс бар */}
         <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+            className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out progress-neon"
             style={{ width: `${(currentStep / 4) * 100}%` }}
           ></div>
         </div>

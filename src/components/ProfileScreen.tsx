@@ -147,6 +147,16 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
     );
   };
 
+  // Функция для получения названия образования
+  const getEducationName = (education: string) => {
+    return t(`profile.education.${education}`) || t("profile.notSpecified");
+  };
+
+  // Функция для получения названия рода деятельности
+  const getOccupationName = (occupation: string) => {
+    return t(`profile.occupation.${occupation}`) || t("profile.notSpecified");
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightboxIndex(null);
@@ -560,6 +570,35 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                   ? "Quit"
                   : "Prefer not to say"
                 : t("profile.noDrinking")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Education & Occupation */}
+      <div className="p-6 shadow-md animate-slideInLeft rounded-xl component-bg border border-border">
+        <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
+          {t("profile.education")} & {t("profile.occupation")}
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.education")}
+            </span>
+            <p className="text-foreground font-medium">
+              {profile?.education
+                ? getEducationName(profile.education)
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.occupation")}
+            </span>
+            <p className="text-foreground font-medium">
+              {profile?.occupation
+                ? getOccupationName(profile.occupation)
+                : t("profile.notSpecified")}
             </p>
           </div>
         </div>

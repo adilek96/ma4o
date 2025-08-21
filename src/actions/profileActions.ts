@@ -1,9 +1,9 @@
 // Экшены для работы с профилем
-import type { ProfileData, OptimisticProfileData, DatingGoal, SmokingStatus, DrinkingStatus, PreferredLocation } from '../types/profile';
-import { DATING_GOALS, SMOKING_OPTIONS, DRINKING_OPTIONS, PREFERRED_LOCATION_OPTIONS } from '../types/profile';
+import type { ProfileData, OptimisticProfileData, DatingGoal, SmokingStatus, DrinkingStatus, PreferredLocation, Education, Occupation } from '../types/profile';
+import { DATING_GOALS, SMOKING_OPTIONS, DRINKING_OPTIONS, PREFERRED_LOCATION_OPTIONS, EDUCATION_OPTIONS, OCCUPATION_OPTIONS } from '../types/profile';
 
-export type { DatingGoal, ProfileData, OptimisticProfileData, SmokingStatus, DrinkingStatus, PreferredLocation };
-export { DATING_GOALS, SMOKING_OPTIONS, DRINKING_OPTIONS, PREFERRED_LOCATION_OPTIONS };
+export type { DatingGoal, ProfileData, OptimisticProfileData, SmokingStatus, DrinkingStatus, PreferredLocation, Education, Occupation };
+export { DATING_GOALS, SMOKING_OPTIONS, DRINKING_OPTIONS, PREFERRED_LOCATION_OPTIONS, EDUCATION_OPTIONS, OCCUPATION_OPTIONS };
 
 // Экшен для создания профиля
 export async function createProfileAction(profileData: ProfileData): Promise<{ success: boolean; error?: string; profileId?: string }> {
@@ -130,13 +130,13 @@ export async function validateProfileData(profileData: ProfileData): Promise<{ i
   if (!profileData.datingGoal) {
     errors.datingGoal = 'Цель знакомства обязательна для заполнения';
   }
-  if (profileData.minAge < 18 || profileData.minAge > 100) {
+  if (!profileData.minAge || profileData.minAge < 18 || profileData.minAge > 100) {
     errors.minAge = 'Минимальный возраст должен быть от 18 до 100 лет';
   }
-  if (profileData.maxAge < 18 || profileData.maxAge > 100) {
+  if (!profileData.maxAge || profileData.maxAge < 18 || profileData.maxAge > 100) {
     errors.maxAge = 'Максимальный возраст должен быть от 18 до 100 лет';
   }
-  if (profileData.minAge > profileData.maxAge) {
+  if (profileData.minAge && profileData.maxAge && profileData.minAge > profileData.maxAge) {
     errors.maxAge = 'Минимальный возраст не может быть больше максимального';
   }
   if (profileData.interests.length === 0) {

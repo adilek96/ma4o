@@ -36,6 +36,30 @@ export const DRINKING_OPTIONS: { value: DrinkingStatus; label: string }[] = [
   { value: "PREFER_NOT_TO_SAY", label: "Предпочитаю не говорить" }
 ];
 
+export type Education = "HIGH_SCHOOL" | "COLLEGE" | "BACHELOR" | "MASTER" | "PHD" | "SELF_TAUGHT" | "OTHER";
+
+export const EDUCATION_OPTIONS: { value: Education; label: string }[] = [
+  { value: "HIGH_SCHOOL", label: "Среднее образование" },
+  { value: "COLLEGE", label: "Колледж" },
+  { value: "BACHELOR", label: "Бакалавриат" },
+  { value: "MASTER", label: "Магистратура" },
+  { value: "PHD", label: "Докторантура" },
+  { value: "SELF_TAUGHT", label: "Самообразование" },
+  { value: "OTHER", label: "Другое" }
+];
+
+export type Occupation = "STUDENT" | "EMPLOYEE" | "FREELANCER" | "ENTREPRENEUR" | "UNEMPLOYED" | "RETIRED" | "OTHER";
+
+export const OCCUPATION_OPTIONS: { value: Occupation; label: string }[] = [
+  { value: "STUDENT", label: "Студент" },
+  { value: "EMPLOYEE", label: "Сотрудник" },
+  { value: "FREELANCER", label: "Фрилансер" },
+  { value: "ENTREPRENEUR", label: "Предприниматель" },
+  { value: "UNEMPLOYED", label: "Безработный" },
+  { value: "RETIRED", label: "Пенсионер" },
+  { value: "OTHER", label: "Другое" }
+];
+
 export interface ProfileData {
   // Связь с пользователем
   userId: string;
@@ -59,8 +83,8 @@ export interface ProfileData {
   // Этап 3: Предпочтения
   seekingGender: "male" | "female" | "any" | "";
   datingGoal: DatingGoal | "";
-  minAge: number;
-  maxAge: number;
+  minAge: number | "";
+  maxAge: number | "";
   interests: string[];
   languages: string[];
 
@@ -68,6 +92,8 @@ export interface ProfileData {
   bio: string;
   smoking?: SmokingStatus;
   drinking?: DrinkingStatus;
+  education?: Education;
+  occupation?: Occupation;
 }
 
 export interface OptimisticProfileData extends ProfileData {
