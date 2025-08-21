@@ -57,6 +57,95 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [locationUpdating, setLocationUpdating] = useState(false);
+  const [countries, setCountries] = useState<{ code: string; name: string }[]>(
+    []
+  );
+
+  // Загружаем список стран
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await fetch(
+          `https://flagcdn.com/${i18n.language}/codes.json`
+        );
+        const data = await response.json();
+
+        const countriesList = Object.entries(data).map(([code, name]) => ({
+          code,
+          name: name as string,
+        }));
+
+        setCountries(countriesList);
+      } catch (error) {
+        console.error("Ошибка загрузки стран:", error);
+        // Fallback на английский
+        try {
+          const response = await fetch("https://flagcdn.com/en/codes.json");
+          const data = await response.json();
+
+          const countriesList = Object.entries(data).map(([code, name]) => ({
+            code,
+            name: name as string,
+          }));
+
+          setCountries(countriesList);
+        } catch (fallbackError) {
+          console.error("Ошибка загрузки стран (fallback):", fallbackError);
+        }
+      }
+    };
+
+    fetchCountries();
+  }, [i18n.language]);
+
+  // Функция для получения названия страны по коду
+  const getCountryName = (countryCode: string) => {
+    const country = countries.find(
+      (c) => c.code.toLowerCase() === countryCode.toLowerCase()
+    );
+    return country ? country.name : countryCode;
+  };
+
+  // Функция для получения названия предпочитаемого пола
+  const getSeekingGenderName = (seekingGender: string) => {
+    switch (seekingGender) {
+      case "male":
+        return t("profile.seekingMale");
+      case "female":
+        return t("profile.seekingFemale");
+      case "any":
+        return t("profile.seekingAny");
+      default:
+        return t("profile.notSpecified");
+    }
+  };
+
+  // Функция для получения названия цели знакомства
+  const getDatingGoalName = (datingGoal: string) => {
+    const goals = {
+      RELATIONSHIP:
+        lang === "ru" ? "Серьезные отношения" : "Serious relationship",
+      FRIENDSHIP: lang === "ru" ? "Дружба" : "Friendship",
+      CASUAL: lang === "ru" ? "Несерьезные отношения" : "Casual dating",
+      MARRIAGE: lang === "ru" ? "Брак" : "Marriage",
+      NETWORKING: lang === "ru" ? "Нетворкинг" : "Networking",
+    };
+    return goals[datingGoal as keyof typeof goals] || t("profile.notSpecified");
+  };
+
+  // Функция для получения названия предпочитаемой локации
+  const getPreferredLocationName = (preferredLocation: string) => {
+    const locations = {
+      SAME_CITY: lang === "ru" ? "Тот же город" : "Same city",
+      SAME_COUNTRY: lang === "ru" ? "Та же страна" : "Same country",
+      NEARBY: lang === "ru" ? "Поблизости" : "Nearby",
+      ANYWHERE: lang === "ru" ? "Где угодно" : "Anywhere",
+    };
+    return (
+      locations[preferredLocation as keyof typeof locations] ||
+      t("profile.notSpecified")
+    );
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -74,14 +163,54 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
     setLocationUpdating(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        // Здесь можно добавить API запрос для обновления локации
-        console.log("New location:", position.coords);
-        alert(t("profile.locationUpdated"));
-        setLocationUpdating(false);
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Получаем адрес по координатам через Nominatim API
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=${i18n.language}`
+          );
+
+          if (!response.ok) {
+            throw new Error("Ошибка получения адреса");
+          }
+
+          const data = await response.json();
+
+          if (data.address) {
+            const address = data.address;
+
+            // Определяем страну и город
+            const country =
+              address.country || address.country_code?.toUpperCase();
+            const city =
+              address.city ||
+              address.town ||
+              address.village ||
+              address.municipality ||
+              address.county;
+
+            console.log("Получен адрес:", {
+              country,
+              city,
+              latitude,
+              longitude,
+            });
+            alert(t("profile.locationUpdated"));
+          } else {
+            alert(t("profile.locationUpdated"));
+          }
+        } catch (error) {
+          console.error("Ошибка получения адреса:", error);
+          alert(t("profile.locationUpdated"));
+        } finally {
+          setLocationUpdating(false);
+        }
       },
       (error) => {
         console.error("Ошибка получения локации:", error);
+        setLocationUpdating(false);
         let errorMessage: any = t("profile.locationErrorGet");
         switch (error.code) {
           case error.PERMISSION_DENIED:
@@ -95,7 +224,6 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             break;
         }
         alert(errorMessage);
-        setLocationUpdating(false);
       },
       {
         enableHighAccuracy: true,
@@ -242,32 +370,18 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
       {/* Location */}
       <div className="p-6 shadow-md animate-slideInRight rounded-xl component-bg border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-bold text-lg text-foreground gradient-text">
-            {t("profile.location")}
-          </h4>
-          <button
-            onClick={handleUpdateLocation}
-            disabled={locationUpdating}
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {locationUpdating ? (
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                <span>Updating...</span>
-              </div>
-            ) : (
-              t("profile.updateLocation")
-            )}
-          </button>
-        </div>
+        <h4 className="font-bold text-lg text-foreground gradient-text mb-4">
+          {t("profile.location")}
+        </h4>
         <div className="space-y-3">
           <div>
             <span className="text-sm text-foreground/70">
               {t("profile.country")}
             </span>
             <p className="text-foreground font-medium">
-              {profile?.country || t("profile.notSpecified")}
+              {profile?.country
+                ? getCountryName(profile.country)
+                : t("profile.notSpecified")}
             </p>
           </div>
           <div>
@@ -278,40 +392,108 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
               {profile?.city || t("profile.notSpecified")}
             </p>
           </div>
-          {profile?.latitude && profile?.longitude && (
-            <div>
-              <span className="text-sm text-foreground/70">
-                {t("profile.coordinates")}
-              </span>
-              <p className="text-foreground font-medium">
-                {profile.latitude.toFixed(6)}, {profile.longitude.toFixed(6)}
-              </p>
-            </div>
-          )}
+          <div>
+            <button
+              onClick={handleUpdateLocation}
+              disabled={locationUpdating}
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {locationUpdating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                  <span>Updating...</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  <span>{t("profile.updateLocation")}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Desired Location */}
-      {profile?.desiredLocation && (
+      {/* Search Preferences */}
+      <div className="p-6 shadow-md animate-slideInLeft rounded-xl component-bg border border-border">
+        <h4 className="font-bold text-lg text-foreground gradient-text mb-4">
+          {t("profile.searchPreferences")}
+        </h4>
+        <div className="space-y-3">
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.seekingGender")}
+            </span>
+            <p className="text-foreground font-medium">
+              {profile?.seekingGender
+                ? getSeekingGenderName(profile.seekingGender)
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.datingGoal")}
+            </span>
+            <p className="text-foreground font-medium">
+              {profile?.datingGoal
+                ? getDatingGoalName(profile.datingGoal)
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.preferredLocation")}
+            </span>
+            <p className="text-foreground font-medium">
+              {profile?.preferredLocation
+                ? getPreferredLocationName(profile.preferredLocation)
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.agePreferences")}
+            </span>
+            <p className="text-foreground font-medium">
+              {profile?.minAge && profile?.maxAge
+                ? `${profile.minAge} - ${profile.maxAge} ${t("profile.age")}`
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Preferred Location */}
+      {profile?.preferredLocation && (
         <div className="p-6 shadow-md animate-slideInLeft rounded-xl component-bg border border-border">
           <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
-            {t("profile.desiredLocation")}
+            {t("profile.preferredLocation")}
           </h4>
           <div className="space-y-3">
             <div>
               <span className="text-sm text-foreground/70">
-                {t("profile.desiredCountry")}
+                {t("profile.preferredLocation")}
               </span>
               <p className="text-foreground font-medium">
-                {profile.desiredLocation.country || t("profile.notSpecified")}
-              </p>
-            </div>
-            <div>
-              <span className="text-sm text-foreground/70">
-                {t("profile.desiredCity")}
-              </span>
-              <p className="text-foreground font-medium">
-                {profile.desiredLocation.city || t("profile.notSpecified")}
+                {getPreferredLocationName(profile.preferredLocation)}
               </p>
             </div>
           </div>

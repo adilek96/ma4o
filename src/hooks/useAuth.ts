@@ -21,17 +21,16 @@ type User = {
     height: number
     country: string
     city: string
-    latitude: number
-    longitude: number
-    desiredLocation?: {
-      country: string
-      city: string
-      latitude?: number
-      longitude?: number
+    location?: {
+      latitude: number
+      longitude: number
     }
-    seekingGender: string
-    datingGoal: string
-    interests: string[]
+         preferredLocation: string
+     seekingGender: string
+     datingGoal: string
+     minAge: number
+     maxAge: number
+     interests: string[]
     languages: string[]
     bio: string
     smoking?: string

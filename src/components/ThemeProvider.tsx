@@ -20,8 +20,11 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 function getTelegramColorScheme(): "light" | "dark" | undefined {
   try {
     const tg = (window as any)?.Telegram?.WebApp;
-    const color = tg?.colorScheme as "light" | "dark" | undefined;
-    return color;
+    if (tg) {
+      const color = tg.colorScheme as "light" | "dark" | undefined;
+      return color;
+    }
+    return undefined;
   } catch {
     return undefined;
   }
@@ -31,6 +34,8 @@ function getSystemColorScheme(): "light" | "dark" {
   // Prioritize Telegram if available
   const tgScheme = getTelegramColorScheme();
   if (tgScheme) return tgScheme;
+  
+  // Fallback to system preference
   return window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
@@ -69,7 +74,15 @@ export function ThemeProvider({
   // Apply class on mount and whenever resolved theme changes
   useEffect(() => {
     applyDocumentClass(resolvedTheme === "dark");
-  }, [resolvedTheme]);
+    
+    // Дополнительная проверка для Telegram при загрузке
+    if (theme === "system") {
+      const tg = (window as any)?.Telegram?.WebApp;
+      if (tg && tg.colorScheme) {
+        applyDocumentClass(tg.colorScheme === "dark");
+      }
+    }
+  }, [resolvedTheme, theme]);
 
   // Persist user choice when not system
   useEffect(() => {
@@ -94,13 +107,34 @@ export function ThemeProvider({
     if (theme !== "system") return;
     try {
       const tg = (window as any)?.Telegram?.WebApp;
-      const handler = () => {
-        applyDocumentClass(getSystemColorScheme() === "dark");
-      };
-      tg?.onEvent?.("themeChanged", handler);
-      return () => tg?.offEvent?.("themeChanged", handler);
-    } catch {
-      /* noop */
+      if (tg) {
+        const handler = () => {
+          applyDocumentClass(getSystemColorScheme() === "dark");
+        };
+        
+        // Подписываемся на изменение темы
+        if (tg.onEvent) {
+          tg.onEvent("themeChanged", handler);
+        }
+        
+        // Также слушаем изменения через MainButton events
+        if (tg.MainButton && tg.MainButton.onClick) {
+          const mainButtonHandler = () => {
+            setTimeout(() => {
+              applyDocumentClass(getSystemColorScheme() === "dark");
+            }, 100);
+          };
+          tg.MainButton.onClick(mainButtonHandler);
+        }
+        
+        return () => {
+          if (tg.offEvent) {
+            tg.offEvent("themeChanged", handler);
+          }
+        };
+      }
+    } catch (error) {
+      console.error("Ошибка при подписке на события Telegram:", error);
     }
   }, [theme]);
 

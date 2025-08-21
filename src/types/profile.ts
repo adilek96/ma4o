@@ -8,6 +8,15 @@ export const DATING_GOALS: { value: DatingGoal; label: string }[] = [
   { value: "NETWORKING", label: "Нетворкинг" }
 ];
 
+export type PreferredLocation = "SAME_CITY" | "SAME_COUNTRY" | "ANYWHERE" | "NEARBY";
+
+export const PREFERRED_LOCATION_OPTIONS: { value: PreferredLocation; label: string }[] = [
+  { value: "SAME_CITY", label: "Тот же город" },
+  { value: "SAME_COUNTRY", label: "Та же страна" },
+  { value: "NEARBY", label: "Поблизости" },
+  { value: "ANYWHERE", label: "Где угодно" }
+];
+
 export type SmokingStatus = "NEVER" | "OCCASIONALLY" | "REGULARLY" | "QUIT" | "PREFER_NOT_TO_SAY";
 export type DrinkingStatus = "NEVER" | "OCCASIONALLY" | "REGULARLY" | "QUIT" | "PREFER_NOT_TO_SAY";
 
@@ -45,16 +54,13 @@ export interface ProfileData {
     latitude: number;
     longitude: number;
   };
-  desiredLocation: {
-    country: string;
-    city: string;
-    latitude?: number;
-    longitude?: number;
-  };
+  preferredLocation: PreferredLocation | "";
 
   // Этап 3: Предпочтения
   seekingGender: "male" | "female" | "any" | "";
   datingGoal: DatingGoal | "";
+  minAge: number;
+  maxAge: number;
   interests: string[];
   languages: string[];
 

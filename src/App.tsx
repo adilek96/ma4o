@@ -6,8 +6,11 @@ import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
 import ProfileSetupForm from "./components/ProfileSetupForm";
-import { init, useRawInitData } from "@telegram-apps/sdk-react";
+import { init } from "@telegram-apps/sdk-react";
 import { useAuth } from "./hooks/useAuth";
+import { useTelegram } from "./hooks/useTelegram";
+import { useTheme } from "./components/ThemeProvider";
+import { TelegramDebug } from "./components/TelegramDebug";
 import {
   createProfileAction,
   type ProfileData,
@@ -18,44 +21,28 @@ type Screen = "discover" | "matches" | "profile" | "editProfile";
 function App() {
   const [active, setActive] = useState<Screen>("discover");
   const [showProfileSetup, setShowProfileSetup] = useState(false);
-  const aplication = import.meta.env.VITE_APPLICATION;
+  const { setTheme } = useTheme();
+  const { isTelegram, theme: telegramTheme, isLoading: telegramLoading } = useTelegram();
 
-  const lang = localStorage.getItem("lang") || "en";
-  if (lang !== "ru" && lang !== "en") {
-    localStorage.setItem("lang", "en");
-  }
-
-  const rawInitData = window.Telegram?.WebApp && useRawInitData();
-
+  // Инициализация Telegram SDK
   useEffect(() => {
-    if (window.Telegram?.WebApp && aplication === "production") {
+    if (isTelegram && import.meta.env.VITE_APPLICATION === "production") {
       init();
-      try {
-        // rawInitData содержит URL query string, нужно её распарсить
-        if (rawInitData) {
-          const urlParams = new URLSearchParams(rawInitData);
-          const userParam = urlParams.get("user");
+    }
+  }, [isTelegram]);
 
-          if (userParam) {
-            const userData = JSON.parse(userParam);
-            const userLanguage = userData.language_code;
-
-            if (userLanguage) {
-              if (userLanguage !== "ru" && userLanguage !== "en") {
-                localStorage.setItem("lang", "en");
-              } else {
-                localStorage.setItem("lang", userLanguage);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Ошибка при парсинге initData:", error);
-        // В случае ошибки используем язык по умолчанию
-        localStorage.setItem("lang", "en");
+  // Синхронизация темы с Telegram
+  useEffect(() => {
+    if (isTelegram && telegramTheme) {
+      setTheme("system");
+      const root = document.documentElement;
+      if (telegramTheme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
       }
     }
-  }, []);
+  }, [isTelegram, telegramTheme, setTheme]);
 
   const { user, loading } = useAuth();
 
@@ -87,8 +74,8 @@ function App() {
     }
   };
 
-  // Показываем загрузку пока проверяется авторизация
-  if (loading) {
+  // Показываем загрузку пока проверяется авторизация и Telegram
+  if (loading || telegramLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen">
         <div className="text-center">
@@ -105,7 +92,7 @@ function App() {
         <Header />
         <main className="flex-1 w-full max-w-md mx-auto">
           {active === "discover" && <DiscoverScreen />}
-          {active === "matches" && <MatchesScreen language={lang} />}
+          {active === "matches" && <MatchesScreen language={localStorage.getItem("lng") || "en"} />}
           {active === "profile" && (
             <ProfileScreen onEdit={() => setActive("editProfile")} />
           )}
@@ -127,6 +114,9 @@ function App() {
           userId={user.id}
         />
       )}
+
+      {/* Отладочная информация для Telegram */}
+      <TelegramDebug />
     </>
   );
 }

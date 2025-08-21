@@ -6,6 +6,7 @@ import {
   DATING_GOALS,
   SMOKING_OPTIONS,
   DRINKING_OPTIONS,
+  PREFERRED_LOCATION_OPTIONS,
 } from "../actions/profileActions";
 
 interface ProfileSetupFormProps {
@@ -78,13 +79,12 @@ export default function ProfileSetupForm({
     country: "",
     city: "",
     location: undefined,
-    desiredLocation: {
-      country: "",
-      city: "",
-    } as { country: string; city: string },
+    preferredLocation: "",
     // Этап 3: Предпочтения
     seekingGender: "",
     datingGoal: "",
+    minAge: 18,
+    maxAge: 50,
     interests: [],
     languages: [],
     // Этап 4: Дополнительная информация
@@ -95,6 +95,8 @@ export default function ProfileSetupForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [countries, setCountries] = useState<Country[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(true);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+  const [addressReceived, setAddressReceived] = useState(false);
   const { t, i18n } = useTranslation();
 
   // Используем useOptimistic для оптимистичных обновлений
@@ -153,22 +155,6 @@ export default function ProfileSetupForm({
     fetchCountries();
   }, [i18n.language]);
 
-  // Блокируем закрытие формы по Escape
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -208,14 +194,9 @@ export default function ProfileSetupForm({
         newErrors.country = t("form.validation.countryRequired");
       if (!formData.city.trim())
         newErrors.city = t("form.validation.cityRequired");
-      if (!formData.desiredLocation.country.trim()) {
-        newErrors.desiredLocationCountry = t(
-          "form.validation.desiredLocationCountryRequired"
-        );
-      }
-      if (!formData.desiredLocation.city.trim()) {
-        newErrors.desiredLocationCity = t(
-          "form.validation.desiredLocationCityRequired"
+      if (!formData.preferredLocation) {
+        newErrors.preferredLocation = t(
+          "form.validation.preferredLocationRequired"
         );
       }
     }
@@ -226,6 +207,15 @@ export default function ProfileSetupForm({
         newErrors.seekingGender = t("form.validation.seekingGenderRequired");
       if (!formData.datingGoal)
         newErrors.datingGoal = t("form.validation.datingGoalRequired");
+      if (formData.minAge < 18 || formData.minAge > 100) {
+        newErrors.minAge = t("form.validation.minAgeRequired");
+      }
+      if (formData.maxAge < 18 || formData.maxAge > 100) {
+        newErrors.maxAge = t("form.validation.maxAgeRequired");
+      }
+      if (formData.minAge > formData.maxAge) {
+        newErrors.maxAge = t("form.validation.ageRangeInvalid");
+      }
       if (formData.interests.length === 0) {
         newErrors.interests = t("form.validation.interestsRequired");
       }
@@ -292,28 +282,10 @@ export default function ProfileSetupForm({
         return newErrors;
       });
     }
-  };
 
-  const handleDesiredLocationChange = (
-    field: "country" | "city",
-    value: string
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      desiredLocation: {
-        ...prev.desiredLocation,
-        [field]: value,
-      } as { country: string; city: string },
-    }));
-    // Очищаем ошибку при изменении поля
-    const errorKey =
-      field === "country" ? "desiredLocationCountry" : "desiredLocationCity";
-    if (errors[errorKey]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[errorKey];
-        return newErrors;
-      });
+    // Сбрасываем состояние получения адреса при изменении страны или города вручную
+    if (name === "country" || name === "city") {
+      setAddressReceived(false);
     }
   };
 
@@ -339,18 +311,85 @@ export default function ProfileSetupForm({
       return;
     }
 
+    setLoadingAddress(true);
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Обновляем координаты
         setFormData((prev) => ({
           ...prev,
           location: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            latitude,
+            longitude,
           },
         }));
+
+        // Получаем адрес по координатам через Nominatim API
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=${i18n.language}`
+          );
+
+          if (!response.ok) {
+            throw new Error("Ошибка получения адреса");
+          }
+
+          const data = await response.json();
+
+          if (data.address) {
+            const address = data.address;
+
+            // Определяем страну и город
+            const country =
+              address.country || address.country_code?.toUpperCase();
+            const city =
+              address.city ||
+              address.town ||
+              address.village ||
+              address.municipality ||
+              address.county;
+
+            if (country) {
+              // Находим код страны в нашем списке
+              const countryObj = countries.find(
+                (c) =>
+                  c.code.toLowerCase() === country.toLowerCase() ||
+                  c.name.toLowerCase() === country.toLowerCase()
+              );
+
+              if (countryObj) {
+                setFormData((prev) => ({
+                  ...prev,
+                  country: countryObj.code,
+                }));
+              }
+            }
+
+            if (city) {
+              setFormData((prev) => ({
+                ...prev,
+                city: city,
+              }));
+            }
+
+            // Показываем уведомление об успешном получении адреса
+            if (country || city) {
+              console.log("Адрес успешно получен:", { country, city });
+              setAddressReceived(true);
+            }
+          }
+        } catch (error) {
+          console.error("Ошибка получения адреса:", error);
+          // Не показываем ошибку пользователю, так как координаты все равно получены
+        } finally {
+          setLoadingAddress(false);
+        }
       },
       (error) => {
         console.error("Ошибка получения локации:", error);
+        setLoadingAddress(false);
         switch (error.code) {
           case error.PERMISSION_DENIED:
             alert(t("form.step2.locationPermissionDenied"));
@@ -580,29 +619,36 @@ export default function ProfileSetupForm({
           <button
             type="button"
             onClick={handleGetLocation}
-            className="w-full px-4 py-3 rounded-2xl border-2 border-border component-bg hover:border-purple-500/50 transition-all duration-200 font-medium text-foreground flex items-center justify-center space-x-2"
+            disabled={loadingAddress}
+            className="w-full px-4 py-3 rounded-2xl border-2 border-border component-bg hover:border-purple-500/50 transition-all duration-200 font-medium text-foreground flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
+            {loadingAddress ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            )}
             <span>
-              {formData.location
+              {loadingAddress
+                ? t("form.step2.locationLoading")
+                : formData.location
                 ? t("form.step2.locationReceived")
                 : t("form.step2.getLocation")}
             </span>
@@ -610,96 +656,53 @@ export default function ProfileSetupForm({
           {formData.location && (
             <div className="p-3 rounded-2xl border-2 border-green-500/20 component-bg bg-green-500/5">
               <p className="text-sm text-green-600 dark:text-green-400">
-                {t("form.step2.locationSuccess")}
+                {addressReceived
+                  ? t("form.step2.locationAndAddressSuccess")
+                  : t("form.step2.locationSuccess")}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {formData.location.latitude.toFixed(6)},{" "}
                 {formData.location.longitude.toFixed(6)}
               </p>
+              {addressReceived && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  {t("form.step2.addressAutoFilled")}
+                </p>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold mb-4 text-foreground">
-          {t("form.step2.desiredLocationTitle")}
-        </h3>
-
-        <div>
-          <label className="block text-sm font-medium mb-3 text-foreground">
-            {t("form.step2.desiredCountry")} *
-          </label>
-          <div className="relative">
-            <select
-              name="desiredLocationCountry"
-              value={formData.desiredLocation.country}
-              onChange={(e) =>
-                handleDesiredLocationChange("country", e.target.value)
-              }
-              className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 appearance-none ${
-                errors.desiredLocationCountry
-                  ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-                  : "border-border focus:border-border focus:ring-border/20 component-bg"
-              }`}
-              disabled={loadingCountries}
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step2.preferredLocation")} *
+        </label>
+        <div className="space-y-3">
+          {PREFERRED_LOCATION_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
             >
-              <option value="">
-                {loadingCountries
-                  ? t("form.step2.countryLoading")
-                  : t("form.step2.desiredCountrySelect")}
-              </option>
-              {countries.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
-            {formData.desiredLocation.country && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <img
-                  src={`https://flagcdn.com/16x12/${formData.desiredLocation.country}.png`}
-                  alt={`Флаг ${
-                    countries.find(
-                      (c) => c.code === formData.desiredLocation.country
-                    )?.name || ""
-                  }`}
-                  className="w-4 h-3 object-cover rounded-sm"
-                />
-              </div>
-            )}
-          </div>
-          {errors.desiredLocationCountry && (
-            <p className="text-destructive text-sm mt-2">
-              {errors.desiredLocationCountry}
-            </p>
-          )}
+              <input
+                type="radio"
+                name="preferredLocation"
+                value={option.value}
+                checked={formData.preferredLocation === option.value}
+                onChange={(e) =>
+                  handleInputChange("preferredLocation", e.target.value)
+                }
+                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
+              />
+              <span className="text-foreground">{option.label}</span>
+            </label>
+          ))}
         </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-medium mb-3 text-foreground">
-            {t("form.step2.desiredCity")} *
-          </label>
-          <input
-            type="text"
-            name="desiredLocationCity"
-            value={formData.desiredLocation.city}
-            onChange={(e) =>
-              handleDesiredLocationChange("city", e.target.value)
-            }
-            className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
-              errors.desiredLocationCity
-                ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-                : "border-border focus:border-border focus:ring-border/20 component-bg"
-            }`}
-            placeholder={t("form.step2.desiredCityPlaceholder")}
-          />
-          {errors.desiredLocationCity && (
-            <p className="text-destructive text-sm mt-2">
-              {errors.desiredLocationCity}
-            </p>
-          )}
-        </div>
+        {errors.preferredLocation && (
+          <p className="text-destructive text-sm mt-2">
+            {errors.preferredLocation}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -776,6 +779,66 @@ export default function ProfileSetupForm({
         {errors.datingGoal && (
           <p className="text-destructive text-sm mt-2">{errors.datingGoal}</p>
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step3.agePreferences")} *
+        </label>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-foreground/70">
+              {t("form.step3.minAge")}
+            </label>
+            <input
+              type="number"
+              name="minAge"
+              value={formData.minAge}
+              onChange={(e) =>
+                handleInputChange("minAge", parseInt(e.target.value) || 18)
+              }
+              min="18"
+              max="100"
+              className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
+                errors.minAge
+                  ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                  : "border-border focus:border-border focus:ring-border/20 component-bg"
+              }`}
+            />
+            {errors.minAge && (
+              <p className="text-destructive text-sm mt-2">{errors.minAge}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 text-foreground/70">
+              {t("form.step3.maxAge")}
+            </label>
+            <input
+              type="number"
+              name="maxAge"
+              value={formData.maxAge}
+              onChange={(e) =>
+                handleInputChange("maxAge", parseInt(e.target.value) || 50)
+              }
+              min="18"
+              max="100"
+              className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
+                errors.maxAge
+                  ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                  : "border-border focus:border-border focus:ring-border/20 component-bg"
+              }`}
+            />
+            {errors.maxAge && (
+              <p className="text-destructive text-sm mt-2">{errors.maxAge}</p>
+            )}
+          </div>
+        </div>
+        <div className="mt-3 p-3 rounded-2xl border-2 border-border component-bg">
+          <p className="text-sm text-foreground/70">
+            {t("form.step3.ageRange")}: {formData.minAge} - {formData.maxAge}{" "}
+            {t("profile.age")}
+          </p>
+        </div>
       </div>
 
       <div>
@@ -942,66 +1005,83 @@ export default function ProfileSetupForm({
   );
 
   return (
-    <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-start justify-center py-24 px-4 z-40 animate-in fade-in duration-300"
-      onClick={(e) => {
-        // Предотвращаем закрытие формы при клике вне её области
-        e.stopPropagation();
-      }}
-    >
-      <div className="component-bg rounded-2xl border-2 border-border shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
-        <div className="p-6">
-          {/* Прогресс бар */}
-          <div className="mb-8">
-            <div className="flex justify-between text-sm text-muted-foreground mb-3">
-              <span>
+    <div className="fixed inset-0 bg-background z-40 animate-in fade-in duration-300 flex flex-col">
+      {/* Заголовок с прогрессом */}
+      <div className="flex-shrink-0 component-bg border-b border-border px-4 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            {currentStep > 1 && (
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-xl border border-border component-bg hover:border-primary/50 transition-all duration-200"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            )}
+            <div>
+              <h1 className="text-lg font-bold text-foreground">
                 {t("form.navigation.step")} {currentStep}{" "}
                 {t("form.navigation.of")} 4
-              </span>
-              <span>{Math.round((currentStep / 4) * 100)}%</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${(currentStep / 4) * 100}%` }}
-              ></div>
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {Math.round((currentStep / 4) * 100)}%{" "}
+                {t("form.navigation.complete")}
+              </p>
             </div>
           </div>
+        </div>
 
+        {/* Прогресс бар */}
+        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${(currentStep / 4) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Основной контент */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-md mx-auto pb-4">
           {/* Контент этапа */}
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
           {currentStep === 4 && renderStep4()}
+        </div>
+      </div>
 
-          {/* Кнопки навигации */}
-          <div className="flex justify-between mt-8 gap-4">
-            {currentStep > 1 && (
-              <button
-                onClick={handleBack}
-                className="px-6 py-3 text-foreground border-2 border-border rounded-2xl component-bg hover:border-primary/50 transition-all duration-200 font-medium"
-              >
-                {t("form.navigation.back")}
-              </button>
+      {/* Фиксированная кнопка внизу */}
+      <div className="flex-shrink-0 component-bg border-t border-border px-4 py-4">
+        <div className="max-w-md mx-auto">
+          <button
+            onClick={handleNext}
+            disabled={isPending}
+            className="w-full px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPending ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                <span>{t("form.navigation.saving")}</span>
+              </div>
+            ) : currentStep === 4 ? (
+              t("form.navigation.finish")
+            ) : (
+              t("form.navigation.next")
             )}
-            <div className="flex-1"></div>
-            <button
-              onClick={handleNext}
-              disabled={isPending}
-              className="px-8 py-3 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPending ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                  <span>{t("form.navigation.saving")}</span>
-                </div>
-              ) : currentStep === 4 ? (
-                t("form.navigation.finish")
-              ) : (
-                t("form.navigation.next")
-              )}
-            </button>
-          </div>
+          </button>
         </div>
       </div>
     </div>
