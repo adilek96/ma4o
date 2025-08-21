@@ -78,7 +78,7 @@ export function useAuth() {
         setUser(data.data)
         setLoading(false)
       } else {
-        if(data.error === "Unauthorized") {
+        if(data.error) {
             await refresh()
         } else {
           await auth()
