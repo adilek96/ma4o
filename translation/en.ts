@@ -156,8 +156,10 @@ export const en = {
     "profile": {
       "bioTitle": "Bio",
       "interests": "Interests",
-      "photos": "Photos",
-      "theme": "Theme",
+             "photos": "Photos",
+       "addPhotos": "Add Photos",
+       "theme": "Theme",
+       "telegramTheme": "Telegram",
       "languageLabel": "Language",
       "age": "years old",
       "noInterests": "No interests added",
@@ -244,7 +246,27 @@ export const en = {
     "datingGoalPreference": "Dating goal",
     "smokingPreference": "Smoking preference",
     "drinkingPreference": "Drinking preference",
-    "save": "Save preferences",
-    "saving": "Saving..."
-  }
-}
+         "save": "Save preferences",
+     "saving": "Saving..."
+   },
+   "photoUpload": {
+     "title": "Photo Upload",
+     "subtitle": "Add photos to your profile",
+     "setupTitle": "Photo Upload",
+     "dragDropTitle": "Drag photos here",
+     "dragDropSubtitle": "or click to select files",
+     "selectFiles": "Select Files",
+     "requirements": "File requirements:",
+     "maxFileSize": "Maximum file size: 5MB",
+     "supportedFormats": "Supported formats: JPG, PNG, GIF",
+     "maxPhotos": "Maximum number of photos: 6",
+     "uploadedPhotos": "Uploaded photos",
+     "uploading": "Uploading {{count}} file(s)...",
+     "uploadError": "Upload error",
+     "deleteError": "Delete error",
+     "invalidFileType": "Invalid file type. Please select an image.",
+     "fileTooLarge": "File too large. Maximum size: 5MB",
+     "cancel": "Cancel",
+     "save": "Save"
+   }
+ }

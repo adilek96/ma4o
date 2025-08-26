@@ -155,8 +155,10 @@ export const ru = {
   "profile": {
     "bioTitle": "Био",
     "interests": "Интересы",
-    "photos": "Фотографии",
-    "theme": "Тема",
+          "photos": "Фотографии",
+      "addPhotos": "Добавить фотографии",
+      "theme": "Тема",
+      "telegramTheme": "Telegram",
     "languageLabel": "Язык",
     "age": "лет",
     "noInterests": "Интересы не добавлены",
@@ -243,7 +245,27 @@ export const ru = {
     "datingGoalPreference": "Цель знакомства",
     "smokingPreference": "Отношение к курению",
     "drinkingPreference": "Отношение к алкоголю",
-    "save": "Сохранить предпочтения",
-    "saving": "Сохранение..."
-  }
-}
+         "save": "Сохранить предпочтения",
+     "saving": "Сохранение..."
+   },
+   "photoUpload": {
+     "title": "Загрузка фотографий",
+     "subtitle": "Добавьте фотографии в свой профиль",
+     "setupTitle": "Загрузка фотографий",
+     "dragDropTitle": "Перетащите фотографии сюда",
+     "dragDropSubtitle": "или нажмите для выбора файлов",
+     "selectFiles": "Выбрать файлы",
+     "requirements": "Требования к файлам:",
+     "maxFileSize": "Максимальный размер файла: 5MB",
+     "supportedFormats": "Поддерживаемые форматы: JPG, PNG, GIF",
+     "maxPhotos": "Максимальное количество фотографий: 6",
+     "uploadedPhotos": "Загруженные фотографии",
+     "uploading": "Загружается {{count}} файл(ов)...",
+     "uploadError": "Ошибка загрузки файла",
+     "deleteError": "Ошибка удаления файла",
+     "invalidFileType": "Неверный тип файла. Выберите изображение.",
+     "fileTooLarge": "Файл слишком большой. Максимальный размер: 5MB",
+     "cancel": "Отмена",
+     "save": "Сохранить"
+   }
+ }

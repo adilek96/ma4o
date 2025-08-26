@@ -20,9 +20,8 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 function getTelegramColorScheme(): "light" | "dark" | undefined {
   try {
     const tg = (window as any)?.Telegram?.WebApp;
-    if (tg) {
-      const color = tg.colorScheme as "light" | "dark" | undefined;
-      return color;
+    if (tg && tg.colorScheme) {
+      return tg.colorScheme as "light" | "dark";
     }
     return undefined;
   } catch {
@@ -60,6 +59,12 @@ export function ThemeProvider({
 }) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     try {
+      // Проверяем, есть ли Telegram WebApp
+      const tg = (window as any)?.Telegram?.WebApp;
+      if (tg && tg.colorScheme) {
+        // Если мы в Telegram, принудительно используем системную тему
+        return "system";
+      }
       return (localStorage.getItem("theme") as ThemeMode) || defaultTheme;
     } catch {
       return defaultTheme;
@@ -79,7 +84,8 @@ export function ThemeProvider({
     if (theme === "system") {
       const tg = (window as any)?.Telegram?.WebApp;
       if (tg && tg.colorScheme) {
-        applyDocumentClass(tg.colorScheme === "dark");
+        const isDark = tg.colorScheme === "dark";
+        applyDocumentClass(isDark);
       }
     }
   }, [resolvedTheme, theme]);
@@ -89,6 +95,25 @@ export function ThemeProvider({
     try {
       localStorage.setItem("theme", theme);
     } catch {}
+  }, [theme]);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    const initializeTheme = () => {
+      const tg = (window as any)?.Telegram?.WebApp;
+      if (tg && tg.colorScheme && theme === "system") {
+        const isDark = tg.colorScheme === "dark";
+        applyDocumentClass(isDark);
+      }
+    };
+
+    // Выполняем инициализацию сразу
+    initializeTheme();
+    
+    // И также через небольшую задержку для надежности
+    const timeout = setTimeout(initializeTheme, 100);
+    
+    return () => clearTimeout(timeout);
   }, [theme]);
 
   // React to OS changes when in system mode
@@ -105,32 +130,42 @@ export function ThemeProvider({
   // React to Telegram theme changes when in system mode
   useEffect(() => {
     if (theme !== "system") return;
+    
+    const handleThemeChange = () => {
+      const newScheme = getSystemColorScheme();
+      applyDocumentClass(newScheme === "dark");
+    };
+    
     try {
       const tg = (window as any)?.Telegram?.WebApp;
       if (tg) {
-        const handler = () => {
-          applyDocumentClass(getSystemColorScheme() === "dark");
-        };
-        
         // Подписываемся на изменение темы
         if (tg.onEvent) {
-          tg.onEvent("themeChanged", handler);
+          tg.onEvent("themeChanged", handleThemeChange);
         }
         
-        // Также слушаем изменения через MainButton events
-        if (tg.MainButton && tg.MainButton.onClick) {
-          const mainButtonHandler = () => {
-            setTimeout(() => {
-              applyDocumentClass(getSystemColorScheme() === "dark");
-            }, 100);
-          };
-          tg.MainButton.onClick(mainButtonHandler);
+        // Также слушаем изменения через viewportChanged
+        if (tg.onEvent) {
+          tg.onEvent("viewportChanged", handleThemeChange);
         }
+        
+        // Периодическая проверка темы (fallback)
+        const interval = setInterval(() => {
+          if (tg.colorScheme) {
+            const currentScheme = getSystemColorScheme();
+            const isDark = currentScheme === "dark";
+            if (document.documentElement.classList.contains("dark") !== isDark) {
+              applyDocumentClass(isDark);
+            }
+          }
+        }, 1000);
         
         return () => {
           if (tg.offEvent) {
-            tg.offEvent("themeChanged", handler);
+            tg.offEvent("themeChanged", handleThemeChange);
+            tg.offEvent("viewportChanged", handleThemeChange);
           }
+          clearInterval(interval);
         };
       }
     } catch (error) {
@@ -161,3 +196,4 @@ export function useTheme() {
   }
   return ctx;
 }
+

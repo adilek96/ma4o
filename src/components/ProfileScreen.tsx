@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { ru } from "../../translation/ru";
 import { en } from "../../translation/en";
+import PhotoUploadForm from "./PhotoUploadForm";
 
 export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   const { i18n } = useTranslation();
@@ -58,6 +59,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [locationUpdating, setLocationUpdating] = useState(false);
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [countries, setCountries] = useState<{ code: string; name: string }[]>(
     []
   );
@@ -666,9 +668,17 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
       {/* Photos */}
       <div className="p-6 shadow-md animate-fadeInUp rounded-xl component-bg border border-border">
-        <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
-          {t("profile.photos")}
-        </h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-bold text-lg text-foreground gradient-text">
+            {t("profile.photos")}
+          </h4>
+          <button
+            onClick={() => setShowPhotoUpload(true)}
+            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-medium transition-all duration-200"
+          >
+            {t("profile.addPhotos")}
+          </button>
+        </div>
         <div className="grid grid-cols-3 gap-3">
           {userPhotos.map((photo: string, index: number) => (
             <div
@@ -722,7 +732,9 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                 variant={theme === "system" ? "default" : "outline"}
                 onClick={() => setTheme("system")}
               >
-                System
+                {theme === "system" && (window as any)?.Telegram?.WebApp
+                  ? t("profile.telegramTheme")
+                  : "System"}
               </Button>
             </div>
           </div>
@@ -769,6 +781,18 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             />
           </div>
         </div>
+      )}
+
+      {/* Photo Upload Form */}
+      {showPhotoUpload && (
+        <PhotoUploadForm
+          onClose={() => setShowPhotoUpload(false)}
+          onSave={(photos) => {
+            console.log("Saved photos:", photos);
+            setShowPhotoUpload(false);
+            // Здесь можно добавить логику сохранения фотографий в профиль
+          }}
+        />
       )}
     </div>
   );
