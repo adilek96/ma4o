@@ -6,6 +6,7 @@ import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import EditProfileScreen from "./components/EditProfileScreen";
 import ProfileSetupForm from "./components/ProfileSetupForm";
+import PreferencesSetupForm from "./components/PreferencesSetupForm";
 import { init } from "@telegram-apps/sdk-react";
 import { useAuth } from "./hooks/useAuth";
 import { useTelegram } from "./hooks/useTelegram";
@@ -15,14 +16,23 @@ import {
   createProfileAction,
   type ProfileData,
 } from "./actions/profileActions";
+import {
+  createPreferencesAction,
+  type PreferencesData,
+} from "./actions/preferencesActions";
 
 type Screen = "discover" | "matches" | "profile" | "editProfile";
 
 function App() {
   const [active, setActive] = useState<Screen>("discover");
   const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [showPreferencesSetup, setShowPreferencesSetup] = useState(false);
   const { setTheme } = useTheme();
-  const { isTelegram, theme: telegramTheme, isLoading: telegramLoading } = useTelegram();
+  const {
+    isTelegram,
+    theme: telegramTheme,
+    isLoading: telegramLoading,
+  } = useTelegram();
 
   // Инициализация Telegram SDK
   useEffect(() => {
@@ -48,9 +58,26 @@ function App() {
 
   useEffect(() => {
     console.log("user", user);
+    console.log("user.isNew:", user?.isNew);
+    console.log("user.isPreferences:", user?.isPreferences);
+
     // Показываем форму заполнения профиля, если пользователь новый
     if (user && user.isNew) {
+      console.log("Показываем форму профиля");
       setShowProfileSetup(true);
+      setShowPreferencesSetup(false);
+    }
+    // Показываем форму предпочтений, если пользователь не новый и предпочтения НЕ заполнены
+    else if (user && !user.isNew && !user.isPreferences) {
+      console.log("Показываем форму предпочтений");
+      setShowProfileSetup(false);
+      setShowPreferencesSetup(true);
+    }
+    // Если пользователь не новый и предпочтения заполнены, скрываем обе формы
+    else if (user && !user.isNew && user.isPreferences) {
+      console.log("Скрываем обе формы");
+      setShowProfileSetup(false);
+      setShowPreferencesSetup(false);
     }
   }, [user]);
 
@@ -74,6 +101,28 @@ function App() {
     }
   };
 
+  const handlePreferencesSetupSubmit = async (
+    preferencesData: PreferencesData
+  ) => {
+    try {
+      // Вызываем API для создания предпочтений
+      const result = await createPreferencesAction(preferencesData);
+
+      if (result.success) {
+        console.log("Предпочтения успешно созданы:", result.preferencesId);
+        // После успешного сохранения скрываем форму
+        setShowPreferencesSetup(false);
+        // Можно также обновить данные пользователя в store
+        // или перезагрузить данные пользователя
+      } else {
+        console.error("Ошибка при создании предпочтений:", result.error);
+        // Здесь можно добавить обработку ошибок для пользователя
+      }
+    } catch (error) {
+      console.error("Ошибка при сохранении предпочтений:", error);
+    }
+  };
+
   // Показываем загрузку пока проверяется авторизация и Telegram
   if (loading || telegramLoading) {
     return (
@@ -92,7 +141,9 @@ function App() {
         <Header />
         <main className="flex-1 w-full max-w-md mx-auto">
           {active === "discover" && <DiscoverScreen />}
-          {active === "matches" && <MatchesScreen language={localStorage.getItem("lng") || "en"} />}
+          {active === "matches" && (
+            <MatchesScreen language={localStorage.getItem("lng") || "en"} />
+          )}
           {active === "profile" && (
             <ProfileScreen onEdit={() => setActive("editProfile")} />
           )}
@@ -110,6 +161,15 @@ function App() {
       {showProfileSetup && user && (
         <ProfileSetupForm
           onSubmit={handleProfileSetupSubmit}
+          onCancel={() => {}} // Пустая функция, так как отмена недоступна
+          userId={user.id}
+        />
+      )}
+
+      {/* Форма заполнения предпочтений */}
+      {showPreferencesSetup && user && (
+        <PreferencesSetupForm
+          onSubmit={handlePreferencesSetupSubmit}
           onCancel={() => {}} // Пустая функция, так как отмена недоступна
           userId={user.id}
         />

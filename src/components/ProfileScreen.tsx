@@ -46,8 +46,9 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
     return age;
   };
 
-  // Получаем данные профиля
+  // Получаем данные профиля и предпочтений
   const profile = user?.profile;
+  const preferences = user?.preferences;
   const userAge = profile?.birthDate ? calculateAge(profile.birthDate) : null;
   const userInterests = profile?.interests || [];
   const userBio = profile?.bio || "";
@@ -109,11 +110,11 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   // Функция для получения названия предпочитаемого пола
   const getSeekingGenderName = (seekingGender: string) => {
     switch (seekingGender) {
-      case "male":
+      case "MALE":
         return t("profile.seekingMale");
-      case "female":
+      case "FEMALE":
         return t("profile.seekingFemale");
-      case "any":
+      case "ANY":
         return t("profile.seekingAny");
       default:
         return t("profile.notSpecified");
@@ -121,7 +122,12 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   };
 
   // Функция для получения названия цели знакомства
-  const getDatingGoalName = (datingGoal: string) => {
+  const getDatingGoalName = (datingGoals: string | string[]) => {
+    if (!datingGoals) return t("profile.notSpecified");
+
+    const goalsArray = Array.isArray(datingGoals) ? datingGoals : [datingGoals];
+    if (goalsArray.length === 0) return t("profile.notSpecified");
+
     const goals = {
       RELATIONSHIP:
         lang === "ru" ? "Серьезные отношения" : "Serious relationship",
@@ -130,7 +136,10 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
       MARRIAGE: lang === "ru" ? "Брак" : "Marriage",
       NETWORKING: lang === "ru" ? "Нетворкинг" : "Networking",
     };
-    return goals[datingGoal as keyof typeof goals] || t("profile.notSpecified");
+
+    return goalsArray
+      .map((goal) => goals[goal as keyof typeof goals] || goal)
+      .join(", ");
   };
 
   // Функция для получения названия предпочитаемой локации
@@ -453,8 +462,8 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
               {t("profile.seekingGender")}
             </span>
             <p className="text-foreground font-medium">
-              {profile?.seekingGender
-                ? getSeekingGenderName(profile.seekingGender)
+              {preferences?.genderPreference
+                ? getSeekingGenderName(preferences.genderPreference)
                 : t("profile.notSpecified")}
             </p>
           </div>
@@ -463,8 +472,8 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
               {t("profile.datingGoal")}
             </span>
             <p className="text-foreground font-medium">
-              {profile?.datingGoal
-                ? getDatingGoalName(profile.datingGoal)
+              {preferences?.datingGoalPreference
+                ? getDatingGoalName(preferences.datingGoalPreference)
                 : t("profile.notSpecified")}
             </p>
           </div>
@@ -473,42 +482,93 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
               {t("profile.preferredLocation")}
             </span>
             <p className="text-foreground font-medium">
-              {profile?.preferredLocation
-                ? getPreferredLocationName(profile.preferredLocation)
+              {preferences?.locationPreference
+                ? getPreferredLocationName(preferences.locationPreference)
                 : t("profile.notSpecified")}
             </p>
+            {/* Показываем дистанцию только если выбрано "Поблизости" */}
+            {preferences?.locationPreference === "NEARBY" &&
+              preferences?.maxDistance && (
+                <div className="mt-2">
+                  <span className="text-sm text-foreground/70">
+                    {t("profile.maxDistance")}
+                  </span>
+                  <p className="text-foreground font-medium">
+                    {preferences.maxDistance} км
+                  </p>
+                </div>
+              )}
           </div>
           <div>
             <span className="text-sm text-foreground/70">
               {t("profile.agePreferences")}
             </span>
             <p className="text-foreground font-medium">
-              {profile?.minAge && profile?.maxAge
-                ? `${profile.minAge} - ${profile.maxAge} ${t("profile.age")}`
+              {preferences?.minAge && preferences?.maxAge
+                ? `${preferences.minAge} - ${preferences.maxAge} ${t(
+                    "profile.age"
+                  )}`
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.smokingPreference")}
+            </span>
+            <p className="text-foreground font-medium">
+              {preferences?.smokingPreference
+                ? lang === "ru"
+                  ? preferences.smokingPreference === "NEVER"
+                    ? "Не курящие"
+                    : preferences.smokingPreference === "OCCASIONALLY"
+                    ? "Курящие иногда"
+                    : preferences.smokingPreference === "REGULARLY"
+                    ? "Курящие регулярно"
+                    : preferences.smokingPreference === "QUIT"
+                    ? "Бросившие курить"
+                    : "Без разницы"
+                  : preferences.smokingPreference === "NEVER"
+                  ? "Non-smokers"
+                  : preferences.smokingPreference === "OCCASIONALLY"
+                  ? "Occasional smokers"
+                  : preferences.smokingPreference === "REGULARLY"
+                  ? "Regular smokers"
+                  : preferences.smokingPreference === "QUIT"
+                  ? "Quit smoking"
+                  : "No preference"
+                : t("profile.notSpecified")}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-foreground/70">
+              {t("profile.drinkingPreference")}
+            </span>
+            <p className="text-foreground font-medium">
+              {preferences?.drinkingPreference
+                ? lang === "ru"
+                  ? preferences.drinkingPreference === "NEVER"
+                    ? "Не пьющие"
+                    : preferences.drinkingPreference === "OCCASIONALLY"
+                    ? "Пьющие иногда"
+                    : preferences.drinkingPreference === "REGULARLY"
+                    ? "Пьющие регулярно"
+                    : preferences.drinkingPreference === "QUIT"
+                    ? "Бросившие пить"
+                    : "Без разницы"
+                  : preferences.drinkingPreference === "NEVER"
+                  ? "Non-drinkers"
+                  : preferences.drinkingPreference === "OCCASIONALLY"
+                  ? "Occasional drinkers"
+                  : preferences.drinkingPreference === "REGULARLY"
+                  ? "Regular drinkers"
+                  : preferences.drinkingPreference === "QUIT"
+                  ? "Quit drinking"
+                  : "No preference"
                 : t("profile.notSpecified")}
             </p>
           </div>
         </div>
       </div>
-
-      {/* Preferred Location */}
-      {profile?.preferredLocation && (
-        <div className="p-6 shadow-md animate-slideInLeft rounded-xl component-bg border border-border">
-          <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
-            {t("profile.preferredLocation")}
-          </h4>
-          <div className="space-y-3">
-            <div>
-              <span className="text-sm text-foreground/70">
-                {t("profile.preferredLocation")}
-              </span>
-              <p className="text-foreground font-medium">
-                {getPreferredLocationName(profile.preferredLocation)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Smoking & Drinking */}
       <div className="p-6 shadow-md animate-slideInRight rounded-xl component-bg border border-border">
@@ -578,12 +638,12 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
       {/* Education & Occupation */}
       <div className="p-6 shadow-md animate-slideInLeft rounded-xl component-bg border border-border">
         <h4 className="font-bold text-lg text-foreground mb-4 gradient-text">
-          {t("profile.education")} & {t("profile.occupation")}
+          {t("profile.educationTitle")} & {t("profile.occupationTitle")}
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <span className="text-sm text-foreground/70">
-              {t("profile.education")}
+              {t("profile.educationTitle")}
             </span>
             <p className="text-foreground font-medium">
               {profile?.education
@@ -593,7 +653,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
           </div>
           <div>
             <span className="text-sm text-foreground/70">
-              {t("profile.occupation")}
+              {t("profile.occupationTitle")}
             </span>
             <p className="text-foreground font-medium">
               {profile?.occupation

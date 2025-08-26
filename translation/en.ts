@@ -130,8 +130,7 @@ export const en = {
       },
       "validation": {
         "userIdRequired": "User ID is required",
-        "firstNameRequired": "First name is required",
-        "lastNameRequired": "Last name is required",
+
         "birthDateRequired": "Date of birth is required",
         "ageRequired": "Age must be at least 18 years",
         "genderRequired": "Gender is required",
@@ -146,9 +145,12 @@ export const en = {
          "ageRangeInvalid": "Minimum age cannot be greater than maximum age",
         "interestsRequired": "Select at least one interest",
         "languagesRequired": "Select at least one language",
-        "bioRequired": "Bio is required",
-        "bioMinLength": "Bio must contain at least 10 characters",
-        "bioMaxLength": "Bio must not exceed 500 characters"
+              "bioRequired": "Bio is required",
+      "bioMinLength": "Bio must contain at least 10 characters",
+      "bioMaxLength": "Bio must not exceed 500 characters",
+      "genderPreferenceRequired": "Gender preference is required",
+      "locationPreferenceRequired": "Location preference is required",
+      "datingGoalPreferenceRequired": "Dating goal preference is required"
       }
     },
     "profile": {
@@ -172,8 +174,6 @@ export const en = {
       "noLanguages": "No languages added",
               "noSmoking": "Not specified",
         "noDrinking": "Not specified",
-        "education": "Education:",
-        "occupation": "Occupation:",
       "getLocation": "Get my location",
       "locationReceived": "Location received",
       "locationSuccess": "Location successfully obtained",
@@ -199,8 +199,52 @@ export const en = {
         "preferredLocation": "Preferred location:",
         "agePreferences": "Age preferences:",
         "ageRange": "Age range:",
+        "maxDistance": "Maximum distance:",
+        "smokingPreference": "Smoking preference:",
+        "drinkingPreference": "Drinking preference:",
         "seekingMale": "Men",
         "seekingFemale": "Women",
-        "seekingAny": "Anyone"
-    }
+        "seekingAny": "Anyone",
+        "educationTitle": "Education",
+        "occupationTitle": "Occupation",
+        "education": {
+          "HIGH_SCHOOL": "High School",
+          "COLLEGE": "College",
+          "BACHELOR": "Bachelor's Degree",
+          "MASTER": "Master's Degree",
+          "PHD": "PhD",
+          "SELF_TAUGHT": "Self-taught",
+          "OTHER": "Other"
+        },
+        "occupation": {
+          "STUDENT": "Student",
+          "EMPLOYEE": "Employee",
+          "FREELANCER": "Freelancer",
+          "ENTREPRENEUR": "Entrepreneur",
+          "UNEMPLOYED": "Unemployed",
+          "RETIRED": "Retired",
+          "OTHER": "Other"
+        }
+    },
+  "preferences": {
+    "title": "Preferences",
+    "subtitle": "Configure search parameters",
+    "setupTitle": "Preferences Setup",
+    "genderPreference": "Preferred gender",
+    "gender": {
+      "male": "Men",
+      "female": "Women",
+      "any": "Any"
+    },
+    "ageRange": "Age range",
+    "minAge": "Minimum age",
+    "maxAge": "Maximum age",
+    "locationPreference": "Preferred location",
+    "maxDistance": "Maximum distance",
+    "datingGoalPreference": "Dating goal",
+    "smokingPreference": "Smoking preference",
+    "drinkingPreference": "Drinking preference",
+    "save": "Save preferences",
+    "saving": "Saving..."
   }
+}

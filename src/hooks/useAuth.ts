@@ -9,36 +9,42 @@ type User = {
   lastName: string
   email: string | null
   isNew: boolean
+  isPreferences: boolean
   createdAt: string
   updatedAt: string
   profile?: {
     id: string
     userId: string
-    firstName: string
-    lastName: string
-    birthDate: string
     gender: string
+    birthDate: string
     height: number
     country: string
     city: string
-    location?: {
-      latitude: number
-      longitude: number
-    }
-         preferredLocation: string
-     seekingGender: string
-     datingGoal: string
-     minAge: number | ""
-     maxAge: number | ""
-     interests: string[]
+    latitude: number
+    longitude: number
+    interests: string[]
     languages: string[]
-         bio: string
-     smoking?: string
-     drinking?: string
-     education?: string
-     occupation?: string
-     isActive: boolean
+    bio: string
+    smoking?: string
+    drinking?: string
+    education?: string
+    occupation?: string
+    isActive: boolean
     isVerified: boolean
+    createdAt: string
+    updatedAt: string
+  }
+  preferences?: {
+    id: string
+    userId: string
+    genderPreference: string
+    minAge: number
+    maxAge: number
+    locationPreference: string
+    maxDistance: number
+    datingGoalPreference: string
+    smokingPreference?: string
+    drinkingPreference?: string
     createdAt: string
     updatedAt: string
   }

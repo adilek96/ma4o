@@ -3,10 +3,8 @@ import { useTranslation } from "react-i18next";
 import {
   createProfileAction,
   type ProfileData,
-  DATING_GOALS,
   SMOKING_OPTIONS,
   DRINKING_OPTIONS,
-  PREFERRED_LOCATION_OPTIONS,
   EDUCATION_OPTIONS,
   OCCUPATION_OPTIONS,
 } from "../actions/profileActions";
@@ -71,30 +69,23 @@ export default function ProfileSetupForm({
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProfileData>({
     userId: userId,
-    // Этап 1: Основная информация
-    firstName: "",
-    lastName: "",
-    birthDate: "",
+    // Основная информация
     gender: "",
+    birthDate: "",
     height: 170,
-    // Этап 2: Локация
+    // Локация
     country: "",
     city: "",
-    location: undefined,
-    preferredLocation: "",
-    // Этап 3: Предпочтения
-    seekingGender: "",
-    datingGoal: "",
-    minAge: "",
-    maxAge: "",
-    interests: [],
+    latitude: 0,
+    longitude: 0,
+    // Дополнительная информация
     languages: [],
-    // Этап 4: Дополнительная информация
     bio: "",
-    smoking: undefined,
-    drinking: undefined,
+    interests: [],
     education: undefined,
     occupation: undefined,
+    smoking: undefined,
+    drinking: undefined,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [countries, setCountries] = useState<Country[]>([]);
@@ -169,10 +160,6 @@ export default function ProfileSetupForm({
 
     if (step === 1) {
       // Валидация основной информации
-      if (!formData.firstName.trim())
-        newErrors.firstName = t("form.validation.firstNameRequired");
-      if (!formData.lastName.trim())
-        newErrors.lastName = t("form.validation.lastNameRequired");
       if (!formData.birthDate)
         newErrors.birthDate = t("form.validation.birthDateRequired");
       if (!formData.gender)
@@ -198,32 +185,10 @@ export default function ProfileSetupForm({
         newErrors.country = t("form.validation.countryRequired");
       if (!formData.city.trim())
         newErrors.city = t("form.validation.cityRequired");
-      if (!formData.preferredLocation) {
-        newErrors.preferredLocation = t(
-          "form.validation.preferredLocationRequired"
-        );
-      }
     }
 
     if (step === 3) {
-      // Валидация предпочтений
-      if (!formData.seekingGender)
-        newErrors.seekingGender = t("form.validation.seekingGenderRequired");
-      if (!formData.datingGoal)
-        newErrors.datingGoal = t("form.validation.datingGoalRequired");
-      if (!formData.minAge || formData.minAge < 18 || formData.minAge > 100) {
-        newErrors.minAge = t("form.validation.minAgeRequired");
-      }
-      if (!formData.maxAge || formData.maxAge < 18 || formData.maxAge > 100) {
-        newErrors.maxAge = t("form.validation.maxAgeRequired");
-      }
-      if (
-        formData.minAge &&
-        formData.maxAge &&
-        formData.minAge > formData.maxAge
-      ) {
-        newErrors.maxAge = t("form.validation.ageRangeInvalid");
-      }
+      // Валидация интересов и языков
       if (formData.interests.length === 0) {
         newErrors.interests = t("form.validation.interestsRequired");
       }
@@ -328,10 +293,8 @@ export default function ProfileSetupForm({
         // Обновляем координаты
         setFormData((prev) => ({
           ...prev,
-          location: {
-            latitude,
-            longitude,
-          },
+          latitude,
+          longitude,
         }));
 
         // Получаем адрес по координатам через Nominatim API
@@ -426,48 +389,6 @@ export default function ProfileSetupForm({
       <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
         {t("form.step1.title")}
       </h2>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step1.firstName")} *
-        </label>
-        <input
-          type="text"
-          name="firstName"
-          value={formData.firstName}
-          onChange={(e) => handleInputChange("firstName", e.target.value)}
-          className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
-            errors.firstName
-              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-              : "border-border focus:border-border focus:ring-border/20 component-bg"
-          }`}
-          placeholder={t("form.step1.firstNamePlaceholder")}
-        />
-        {errors.firstName && (
-          <p className="text-destructive text-sm mt-2">{errors.firstName}</p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step1.lastName")} *
-        </label>
-        <input
-          type="text"
-          name="lastName"
-          value={formData.lastName}
-          onChange={(e) => handleInputChange("lastName", e.target.value)}
-          className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
-            errors.lastName
-              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-              : "border-border focus:border-border focus:ring-border/20 component-bg"
-          }`}
-          placeholder={t("form.step1.lastNamePlaceholder")}
-        />
-        {errors.lastName && (
-          <p className="text-destructive text-sm mt-2">{errors.lastName}</p>
-        )}
-      </div>
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
@@ -656,12 +577,12 @@ export default function ProfileSetupForm({
             <span>
               {loadingAddress
                 ? t("form.step2.locationLoading")
-                : formData.location
+                : formData.latitude !== 0 || formData.longitude !== 0
                 ? t("form.step2.locationReceived")
                 : t("form.step2.getLocation")}
             </span>
           </button>
-          {formData.location && (
+          {(formData.latitude !== 0 || formData.longitude !== 0) && (
             <div className="p-3 rounded-2xl border-2 border-green-500/20 component-bg bg-green-500/5">
               <p className="text-sm text-green-600 dark:text-green-400">
                 {addressReceived
@@ -669,8 +590,7 @@ export default function ProfileSetupForm({
                   : t("form.step2.locationSuccess")}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {formData.location.latitude.toFixed(6)},{" "}
-                {formData.location.longitude.toFixed(6)}
+                {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
               </p>
               {addressReceived && (
                 <p className="text-xs text-green-600 dark:text-green-400 mt-1">
@@ -681,189 +601,15 @@ export default function ProfileSetupForm({
           )}
         </div>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step2.preferredLocation")} *
-        </label>
-        <div className="space-y-3">
-          {PREFERRED_LOCATION_OPTIONS.map((option) => (
-            <label
-              key={option.value}
-              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="preferredLocation"
-                value={option.value}
-                checked={formData.preferredLocation === option.value}
-                onChange={(e) =>
-                  handleInputChange("preferredLocation", e.target.value)
-                }
-                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
-              />
-              <span className="text-foreground">{option.label}</span>
-            </label>
-          ))}
-        </div>
-        {errors.preferredLocation && (
-          <p className="text-destructive text-sm mt-2">
-            {errors.preferredLocation}
-          </p>
-        )}
-      </div>
     </div>
   );
 
-  // Этап 3: Предпочтения
+  // Этап 3: Интересы и языки
   const renderStep3 = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center mb-6 gradient-text">
         {t("form.step3.title")}
       </h2>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step3.seekingGender")} *
-        </label>
-        <div className="space-y-3">
-          {["male", "female", "any"].map((seekingGender) => (
-            <label
-              key={seekingGender}
-              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="seekingGender"
-                value={seekingGender}
-                checked={formData.seekingGender === seekingGender}
-                onChange={(e) =>
-                  handleInputChange("seekingGender", e.target.value)
-                }
-                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
-              />
-              <span className="capitalize text-foreground">
-                {t(
-                  `form.step3.seeking${
-                    seekingGender.charAt(0).toUpperCase() +
-                    seekingGender.slice(1)
-                  }`
-                )}
-              </span>
-            </label>
-          ))}
-        </div>
-        {errors.seekingGender && (
-          <p className="text-destructive text-sm mt-2">
-            {errors.seekingGender}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step3.datingGoal")} *
-        </label>
-        <div className="space-y-3">
-          {DATING_GOALS.map((goal) => (
-            <label
-              key={goal.value}
-              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="datingGoal"
-                value={goal.value}
-                checked={formData.datingGoal === goal.value}
-                onChange={(e) =>
-                  handleInputChange("datingGoal", e.target.value)
-                }
-                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
-              />
-              <span className="text-foreground">{goal.label}</span>
-            </label>
-          ))}
-        </div>
-        {errors.datingGoal && (
-          <p className="text-destructive text-sm mt-2">{errors.datingGoal}</p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step3.agePreferences")} *
-        </label>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2 text-foreground/70">
-              {t("form.step3.minAge")}
-            </label>
-            <input
-              type="number"
-              name="minAge"
-              value={formData.minAge}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === "") {
-                  handleInputChange("minAge", "");
-                } else {
-                  const numValue = parseInt(value);
-                  if (!isNaN(numValue)) {
-                    handleInputChange("minAge", numValue);
-                  }
-                }
-              }}
-              min="18"
-              max="100"
-              className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                errors.minAge
-                  ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-                  : "border-border focus:border-border focus:ring-border/20 component-bg"
-              }`}
-            />
-            {errors.minAge && (
-              <p className="text-destructive text-sm mt-2">{errors.minAge}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-foreground/70">
-              {t("form.step3.maxAge")}
-            </label>
-            <input
-              type="number"
-              name="maxAge"
-              value={formData.maxAge}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === "") {
-                  handleInputChange("maxAge", "");
-                } else {
-                  const numValue = parseInt(value);
-                  if (!isNaN(numValue)) {
-                    handleInputChange("maxAge", numValue);
-                  }
-                }
-              }}
-              min="18"
-              max="100"
-              className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                errors.maxAge
-                  ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-                  : "border-border focus:border-border focus:ring-border/20 component-bg"
-              }`}
-            />
-            {errors.maxAge && (
-              <p className="text-destructive text-sm mt-2">{errors.maxAge}</p>
-            )}
-          </div>
-        </div>
-        <div className="mt-3 p-3 rounded-2xl border-2 border-border component-bg">
-          <p className="text-sm text-foreground/70">
-            {t("form.step3.ageRange")}: {formData.minAge || "—"} -{" "}
-            {formData.maxAge || "—"} {t("profile.age")}
-          </p>
-        </div>
-      </div>
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">

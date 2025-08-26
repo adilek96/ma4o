@@ -61,39 +61,36 @@ export const OCCUPATION_OPTIONS: { value: Occupation; label: string }[] = [
 ];
 
 export interface ProfileData {
-  // Связь с пользователем
   userId: string;
-
-  // Этап 1: Основная информация
-  firstName: string;
-  lastName: string;
+  // Основная информация
+  gender: string;
   birthDate: string;
-  gender: "male" | "female" | "other" | "";
   height: number;
-
-  // Этап 2: Локация
+  // Локация
   country: string;
   city: string;
-  location?: {
-    latitude: number;
-    longitude: number;
-  };
-  preferredLocation: PreferredLocation | "";
-
-  // Этап 3: Предпочтения
-  seekingGender: "male" | "female" | "any" | "";
-  datingGoal: DatingGoal | "";
-  minAge: number | "";
-  maxAge: number | "";
-  interests: string[];
+  latitude: number;
+  longitude: number;
+  // Дополнительная информация
   languages: string[];
-
-  // Этап 4: Дополнительная информация
   bio: string;
-  smoking?: SmokingStatus;
-  drinking?: DrinkingStatus;
+  interests: string[];
   education?: Education;
   occupation?: Occupation;
+  smoking?: SmokingStatus;
+  drinking?: DrinkingStatus;
+}
+
+export interface PreferencesData {
+  userId: string;
+  genderPreference: string;
+  minAge: number | "";
+  maxAge: number | "";
+  locationPreference: PreferredLocation | "";
+  maxDistance: number;
+  datingGoalPreference: DatingGoal[];
+  smokingPreference?: SmokingStatus;
+  drinkingPreference?: DrinkingStatus;
 }
 
 export interface OptimisticProfileData extends ProfileData {

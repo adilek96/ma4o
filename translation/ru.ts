@@ -130,8 +130,6 @@ export const ru = {
     },
     "validation": {
       "userIdRequired": "ID пользователя обязателен",
-      "firstNameRequired": "Имя обязательно для заполнения",
-      "lastNameRequired": "Фамилия обязательна для заполнения",
       "birthDateRequired": "Дата рождения обязательна",
       "ageRequired": "Возраст должен быть не менее 18 лет",
       "genderRequired": "Пол обязателен для заполнения",
@@ -148,7 +146,10 @@ export const ru = {
       "languagesRequired": "Выберите хотя бы один язык",
       "bioRequired": "Биография обязательна для заполнения",
       "bioMinLength": "Биография должна содержать минимум 10 символов",
-      "bioMaxLength": "Биография не должна превышать 500 символов"
+      "bioMaxLength": "Биография не должна превышать 500 символов",
+      "genderPreferenceRequired": "Предпочитаемый пол обязателен для заполнения",
+      "locationPreferenceRequired": "Предпочитаемая локация обязательна для заполнения",
+      "datingGoalPreferenceRequired": "Цель знакомства обязательна для заполнения"
     }
   },
   "profile": {
@@ -172,8 +173,6 @@ export const ru = {
     "noLanguages": "Языки не добавлены",
          "noSmoking": "Не указано",
      "noDrinking": "Не указано",
-     "education": "Образование:",
-     "occupation": "Род деятельности:",
     "getLocation": "Получить мою локацию",
     "locationReceived": "Локация получена",
     "locationSuccess": "Локация успешно получена",
@@ -197,10 +196,54 @@ export const ru = {
      "seekingGender": "Ищу:",
      "datingGoal": "Цель знакомства:",
      "preferredLocation": "Предпочитаемая локация:",
-     "agePreferences": "Предпочтения по возрасту:",
-     "ageRange": "Возрастной диапазон:",
-     "seekingMale": "Мужчин",
-     "seekingFemale": "Женщин",
-     "seekingAny": "Без разницы"
+           "agePreferences": "Предпочтения по возрасту:",
+      "ageRange": "Возрастной диапазон:",
+      "maxDistance": "Максимальная дистанция:",
+      "smokingPreference": "Предпочтения по курению:",
+      "drinkingPreference": "Предпочтения по алкоголю:",
+      "seekingMale": "Мужчин",
+      "seekingFemale": "Женщин",
+      "seekingAny": "Без разницы",
+     "educationTitle": "Образование",
+     "occupationTitle": "Род деятельности",
+     "education": {
+       "HIGH_SCHOOL": "Среднее образование",
+       "COLLEGE": "Колледж",
+       "BACHELOR": "Бакалавриат",
+       "MASTER": "Магистратура",
+       "PHD": "Докторантура",
+       "SELF_TAUGHT": "Самообразование",
+       "OTHER": "Другое"
+     },
+     "occupation": {
+       "STUDENT": "Студент",
+       "EMPLOYEE": "Сотрудник",
+       "FREELANCER": "Фрилансер",
+       "ENTREPRENEUR": "Предприниматель",
+       "UNEMPLOYED": "Безработный",
+       "RETIRED": "Пенсионер",
+       "OTHER": "Другое"
+     }
+  },
+  "preferences": {
+    "title": "Предпочтения",
+    "subtitle": "Настройте параметры поиска",
+    "setupTitle": "Настройка предпочтений",
+    "genderPreference": "Предпочитаемый пол",
+    "gender": {
+      "male": "Мужчин",
+      "female": "Женщин",
+      "any": "Без разницы"
+    },
+    "ageRange": "Возрастной диапазон",
+    "minAge": "Минимальный возраст",
+    "maxAge": "Максимальный возраст",
+    "locationPreference": "Предпочитаемая локация",
+    "maxDistance": "Максимальное расстояние",
+    "datingGoalPreference": "Цель знакомства",
+    "smokingPreference": "Отношение к курению",
+    "drinkingPreference": "Отношение к алкоголю",
+    "save": "Сохранить предпочтения",
+    "saving": "Сохранение..."
   }
 }
