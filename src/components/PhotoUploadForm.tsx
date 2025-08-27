@@ -386,7 +386,7 @@ export default function PhotoUploadForm({
                       }`}
                     >
                       <img
-                        src={`/uploads/${photo.url}`}
+                        src={`${photo.url}`}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
                       />

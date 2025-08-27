@@ -1,7 +1,7 @@
 {
     "rewrites": [
       {
-        "source": "/uploads/(.*)",
+        "source": "/ma4o/(.*)",
         "destination": "https://blob.ma4o.com/$1"
       }
     ]
