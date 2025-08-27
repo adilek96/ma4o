@@ -5,13 +5,34 @@ export interface UploadResponse {
   error?: string;
 }
 
-export async function uploadFileAction(file: File): Promise<UploadResponse> {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+export interface MultipleUploadResponse {
+  success: boolean;
+  urls?: string[];
+  error?: string;
+}
 
-    const response = await fetch("/api/v1/user/photo/upload", {
+export async function uploadFileAction(files: File | File[]): Promise<MultipleUploadResponse> {
+  try {
+    const aplication = import.meta.env.VITE_APPLICATION;
+    const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
+    const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
+    const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
+
+    // Преобразуем в массив, если передан один файл
+    const fileArray = Array.isArray(files) ? files : [files];
+    
+    const formData = new FormData();
+    
+    // Добавляем все файлы в FormData
+    fileArray.forEach((file) => {
+      formData.append("files", file);
+    });
+
+
+
+    const response = await fetch(`${baseUrl}/api/v1/user/photo/upload`, {
       method: "POST",
+      credentials: 'include',
       body: formData,
     });
 
@@ -20,20 +41,14 @@ export async function uploadFileAction(file: File): Promise<UploadResponse> {
     }
 
     const data = await response.json();
+
+    return {
+      success: true,
+      urls: data.urls
+    };
     
-    if (data.success) {
-      return {
-        success: true,
-        url: data.url
-      };
-    } else {
-      return {
-        success: false,
-        error: data.error || "Ошибка загрузки файла"
-      };
-    }
   } catch (error) {
-    console.error("Ошибка загрузки файла:", error);
+    console.error("Ошибка загрузки файлов:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Неизвестная ошибка"
@@ -41,10 +56,16 @@ export async function uploadFileAction(file: File): Promise<UploadResponse> {
   }
 }
 
-export async function deletePhotoAction(photoId: string): Promise<UploadResponse> {
+export async function deletePhotoAction(fileId: string): Promise<UploadResponse> {
   try {
-    const response = await fetch(`/api/v1/user/photo/${photoId}`, {
+    const aplication = import.meta.env.VITE_APPLICATION;
+    const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
+    const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
+    const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
+
+    const response = await fetch(`${baseUrl}/api/v1/user/photo/${fileId}`, {
       method: "DELETE",
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -68,4 +89,4 @@ export async function deletePhotoAction(photoId: string): Promise<UploadResponse
       error: error instanceof Error ? error.message : "Неизвестная ошибка"
     };
   }
-}
+}         

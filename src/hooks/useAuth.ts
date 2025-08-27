@@ -48,6 +48,13 @@ type User = {
     createdAt: string
     updatedAt: string
   }
+  photos?: {
+    id: string
+    userId: string
+    url: string
+    createdAt: string
+    updatedAt: string
+  }[]
 }
 
 export function useAuth() {
@@ -71,6 +78,8 @@ export function useAuth() {
   const initData = window.Telegram?.WebApp && aplication === "production"
     ? rawInitData as string
     : initDataDev 
+
+    console.log("initData", initData)
 
   const checkAuth = async () => {
     try {

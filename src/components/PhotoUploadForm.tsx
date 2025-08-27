@@ -1,9 +1,10 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../hooks/useAuth";
 import {
   uploadFileAction,
   deletePhotoAction,
-  type UploadResponse,
+  type MultipleUploadResponse,
 } from "../actions/fileUploadActions";
 
 interface Photo {
@@ -15,65 +16,94 @@ interface Photo {
 interface PhotoUploadFormProps {
   onClose: () => void;
   onSave: (photos: Photo[]) => void;
-  initialPhotos?: Photo[];
 }
 
 export default function PhotoUploadForm({
   onClose,
   onSave,
-  initialPhotos = [],
 }: PhotoUploadFormProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  // Преобразуем фотографии из user.photos в формат Photo
+  const initialPhotos: Photo[] =
+    user?.photos?.map((photo) => ({
+      id: photo.id,
+      url: photo.url,
+      isUploading: false,
+    })) || [];
+
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Обновляем фотографии при изменении данных пользователя
+  useEffect(() => {
+    const updatedPhotos: Photo[] =
+      user?.photos?.map((photo) => ({
+        id: photo.id,
+        url: photo.url,
+      })) || [];
+    setPhotos(updatedPhotos);
+  }, [user?.photos]);
 
   const handleFileUpload = useCallback(
-    async (file: File) => {
-      // Проверяем тип файла
-      if (!file.type.startsWith("image/")) {
-        alert(t("photoUpload.invalidFileType"));
-        return;
-      }
+    async (files: File[]) => {
+      // Очищаем предыдущую ошибку
+      setUploadError(null);
 
-      // Проверяем размер файла (максимум 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert(t("photoUpload.fileTooLarge"));
-        return;
-      }
+      // Фильтруем и валидируем файлы
+      const validFiles = files.filter((file) => {
+        if (!file.type.startsWith("image/")) {
+          setUploadError(t("photoUpload.invalidFileType"));
+          return false;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          setUploadError(t("photoUpload.fileTooLarge"));
+          return false;
+        }
+        return true;
+      });
 
-      // Создаем временный ID для фото
-      const tempId = `temp-${Date.now()}`;
-      const tempPhoto: Photo = {
-        id: tempId,
+      if (validFiles.length === 0) return;
+
+      // Создаем временные фото для каждого файла
+      const tempPhotos: Photo[] = validFiles.map((file, index) => ({
+        id: `temp-${Date.now()}-${index}`,
         url: URL.createObjectURL(file),
         isUploading: true,
-      };
+      }));
 
-      setPhotos((prev) => [...prev, tempPhoto]);
-      setUploadingCount((prev) => prev + 1);
+      setPhotos((prev) => [...prev, ...tempPhotos]);
+      setUploadingCount((prev) => prev + validFiles.length);
 
       try {
-        const result: UploadResponse = await uploadFileAction(file);
+        const result: MultipleUploadResponse = await uploadFileAction(
+          validFiles
+        );
 
-        if (result.success && result.url) {
+        if (result.success && result.urls && result.urls.length > 0) {
+          // Обновляем страницу для получения новых данных
+          window.location.reload();
+        } else {
+          // Удаляем неудачные фото
           setPhotos((prev) =>
-            prev.map((photo) =>
-              photo.id === tempId
-                ? { ...photo, url: result.url!, isUploading: false }
-                : photo
+            prev.filter(
+              (photo) => !tempPhotos.some((temp) => temp.id === photo.id)
             )
           );
-        } else {
-          // Удаляем неудачное фото
-          setPhotos((prev) => prev.filter((photo) => photo.id !== tempId));
-          alert(result.error || t("photoUpload.uploadError"));
+          setUploadError(result.error || t("photoUpload.uploadError"));
         }
       } catch (error) {
-        setPhotos((prev) => prev.filter((photo) => photo.id !== tempId));
-        alert(t("photoUpload.uploadError"));
+        setPhotos((prev) =>
+          prev.filter(
+            (photo) => !tempPhotos.some((temp) => temp.id === photo.id)
+          )
+        );
+        setUploadError(t("photoUpload.uploadError"));
       } finally {
-        setUploadingCount((prev) => prev - 1);
+        setUploadingCount((prev) => prev - validFiles.length);
       }
     },
     [t]
@@ -83,7 +113,7 @@ export default function PhotoUploadForm({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
       if (files) {
-        Array.from(files).forEach(handleFileUpload);
+        handleFileUpload(Array.from(files));
       }
     },
     [handleFileUpload]
@@ -96,7 +126,7 @@ export default function PhotoUploadForm({
 
       const files = event.dataTransfer.files;
       if (files) {
-        Array.from(files).forEach(handleFileUpload);
+        handleFileUpload(Array.from(files));
       }
     },
     [handleFileUpload]
@@ -117,7 +147,8 @@ export default function PhotoUploadForm({
       try {
         const result = await deletePhotoAction(photoId);
         if (result.success) {
-          setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+          // Обновляем страницу для получения новых данных
+          window.location.reload();
         } else {
           alert(result.error || t("photoUpload.deleteError"));
         }
@@ -133,6 +164,8 @@ export default function PhotoUploadForm({
   };
 
   const canSave = photos.length > 0 && uploadingCount === 0;
+
+  console.log("photos", photos);
 
   return (
     <div className="fixed inset-0 bg-background z-40 animate-in fade-in duration-300 flex flex-col">
@@ -294,15 +327,22 @@ export default function PhotoUploadForm({
             </div>
           )}
 
-          {/* Прогресс загрузки */}
-          {uploadingCount > 0 && (
+          {/* Прогресс загрузки и ошибки */}
+          {(uploadingCount > 0 || uploadError) && (
             <div className="p-4 rounded-2xl border border-border component-bg">
-              <div className="flex items-center space-x-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                <span className="text-sm text-foreground">
-                  {t("photoUpload.uploading", { count: uploadingCount })}
-                </span>
-              </div>
+              {uploadingCount > 0 && (
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                  <span className="text-sm text-foreground">
+                    {t("photoUpload.uploading", { count: uploadingCount })}
+                  </span>
+                </div>
+              )}
+              {uploadError && (
+                <div className="text-sm text-red-500 font-medium">
+                  {uploadError}
+                </div>
+              )}
             </div>
           )}
         </div>
