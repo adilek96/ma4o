@@ -2,12 +2,33 @@ import { useTelegram } from "../hooks/useTelegram";
 import { useTheme } from "./ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
+import { useEffect, useState } from "react";
 
 export function TelegramDebug() {
   const { isTelegram, user, theme: telegramTheme, isLoading } = useTelegram();
   const { theme, resolvedTheme } = useTheme();
   const { i18n } = useTranslation();
   const { user: authUser, loading: authLoading } = useAuth();
+  const [initDataInfo, setInitDataInfo] = useState<string>("");
+
+  useEffect(() => {
+    const updateInitDataInfo = () => {
+      const aplication = import.meta.env.VITE_APPLICATION;
+      const initDataDev = import.meta.env.VITE_INIT_DATA_DEV;
+
+      if (aplication === "production") {
+        if (window.Telegram?.WebApp?.initData) {
+          setInitDataInfo("window.Telegram.WebApp.initData");
+        } else {
+          setInitDataInfo("rawInitData (SDK)");
+        }
+      } else {
+        setInitDataInfo("initDataDev");
+      }
+    };
+
+    updateInitDataInfo();
+  }, []);
 
   if (!isTelegram) {
     return null;
@@ -24,6 +45,7 @@ export function TelegramDebug() {
         <div>Telegram Theme: {telegramTheme || "Unknown"}</div>
         <div>Current Language: {i18n.language}</div>
         <div>Environment: {import.meta.env.VITE_APPLICATION}</div>
+        <div>InitData Source: {initDataInfo}</div>
         {user && (
           <div>
             <div>Telegram User: {user.first_name}</div>
@@ -47,6 +69,12 @@ export function TelegramDebug() {
         <div>
           InitData Available: {window.Telegram?.WebApp?.initData ? "Yes" : "No"}
         </div>
+        {window.Telegram?.WebApp?.initData && (
+          <div>
+            InitData Preview: {window.Telegram.WebApp.initData.substring(0, 50)}
+            ...
+          </div>
+        )}
       </div>
     </div>
   );

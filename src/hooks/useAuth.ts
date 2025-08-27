@@ -61,6 +61,7 @@ type User = {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initData, setInitData] = useState<string | null>(null)
 
   const aplication = import.meta.env.VITE_APPLICATION;
   const initDataDev = import.meta.env.VITE_INIT_DATA_DEV;
@@ -72,24 +73,40 @@ export function useAuth() {
   const rawInitData = useRawInitData();
   
   // Определяем initData на основе окружения
-  const getInitData = () => {
+  const updateInitData = () => {
     if (aplication === "production") {
       // В продакшене используем только реальные данные Telegram
       if (window.Telegram?.WebApp?.initData) {
-        return window.Telegram.WebApp.initData;
+        console.log('Используем window.Telegram.WebApp.initData');
+        setInitData(window.Telegram.WebApp.initData);
+        return;
       }
       if (rawInitData) {
-        return rawInitData as string;
+        console.log('Используем rawInitData');
+        setInitData(rawInitData as string);
+        return;
       }
       // Если нет данных Telegram, возвращаем null
-      return null;
+      console.log('Нет данных Telegram, устанавливаем null');
+      setInitData(null);
     } else {
       // В разработке используем dev данные
-      return initDataDev;
+      console.log('Используем initDataDev');
+      setInitData(initDataDev);
     }
   };
 
-  const initData = getInitData();
+  // Обновляем initData при изменении rawInitData или window.Telegram
+  useEffect(() => {
+    updateInitData();
+    
+    // Добавляем небольшую задержку для инициализации Telegram WebApp
+    const timer = setTimeout(() => {
+      updateInitData();
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, [rawInitData, aplication]);
 
   const checkAuth = async () => {
     try {
@@ -144,6 +161,8 @@ export function useAuth() {
         setLoading(false)
         return
       }
+
+      console.log('auth: отправляем initData на сервер:', initData.substring(0, 100) + '...');
 
       const res = await fetch(`${baseUrl}/api/v1/auth/tg`, { 
           method: 'POST', 
