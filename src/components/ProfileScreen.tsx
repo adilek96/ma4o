@@ -319,7 +319,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
           <div className="absolute -inset-1 rounded-full bg-[conic-gradient(var(--ring),transparent_60%)] blur-sm opacity-70 animate-[spin_8s_linear_infinite]"></div>
           <div className="relative w-full h-full ring-4 ring-white/20 transition-all duration-300 hover:ring-white/40 rounded-full overflow-hidden">
             <img
-              src={mainPhoto ? `/uploads/${mainPhoto.url}` : ""}
+              src={mainPhoto ? `${mainPhoto.url}` : ""}
               alt="Profile"
               className="w-full h-full object-cover"
             />
@@ -700,7 +700,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <img
-                  src={`/uploads/${photo.url}` || "/placeholder.svg"}
+                  src={`${photo.url}`}
                   alt={`Photo ${index + 1}`}
                   className="w-full h-full object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
                   onClick={() => setLightboxIndex(index)}
@@ -801,7 +801,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={userPhotos[lightboxIndex]?.url || "/placeholder.svg"}
+              src={userPhotos[lightboxIndex]?.url || ""}
               alt="preview"
               className="w-full h-full object-contain"
             />
