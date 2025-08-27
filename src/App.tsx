@@ -41,7 +41,6 @@ function App() {
     if (isTelegram && import.meta.env.VITE_APPLICATION === "production") {
       init();
     }
-    console.log("isTelegram используется телеграм", isTelegram);
   }, [isTelegram]);
 
   // Синхронизация темы с Telegram

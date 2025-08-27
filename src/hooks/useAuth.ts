@@ -77,21 +77,17 @@ export function useAuth() {
     if (aplication === "production") {
       // В продакшене используем только реальные данные Telegram
       if (window.Telegram?.WebApp?.initData) {
-        console.log('Используем window.Telegram.WebApp.initData');
         setInitData(window.Telegram.WebApp.initData);
         return;
       }
       if (rawInitData) {
-        console.log('Используем rawInitData');
         setInitData(rawInitData as string);
         return;
       }
       // Если нет данных Telegram, возвращаем null
-      console.log('Нет данных Telegram, устанавливаем null');
       setInitData(null);
     } else {
       // В разработке используем dev данные
-      console.log('Используем initDataDev');
       setInitData(initDataDev);
     }
   };
@@ -114,7 +110,6 @@ export function useAuth() {
         credentials: 'include'
       })
       const data = await res.json()
-      console.log('checkAuth: ответ от сервера', data)
 
       if (data.data) {
         setUser(data.data)
@@ -127,7 +122,6 @@ export function useAuth() {
         }
       }
     } catch (error) {
-      console.log('checkAuth: ошибка', error)
       await refresh()
     }
   }
@@ -138,8 +132,6 @@ export function useAuth() {
         method: 'POST',
         credentials: 'include'
       })
-      const data = await res.json()
-      console.log('refresh: ответ от сервера', data)
       
       if (res.ok) {
         // Если refresh успешен, проверяем снова
@@ -148,7 +140,6 @@ export function useAuth() {
         await auth()
       }
     } catch (error) {
-      console.log('refresh: ошибка', error)
       await auth()
     }
   }
@@ -157,12 +148,9 @@ export function useAuth() {
     try {
       // Проверяем, есть ли данные для аутентификации
       if (!initData) {
-        console.log('auth: нет данных для аутентификации')
         setLoading(false)
         return
       }
-
-      console.log('auth: отправляем initData на сервер:', initData.substring(0, 100) + '...');
 
       const res = await fetch(`${baseUrl}/api/v1/auth/tg`, { 
           method: 'POST', 
@@ -174,27 +162,22 @@ export function useAuth() {
           credentials: 'include'
       })
       const data = await res.json()
-      console.log('auth: ответ от сервера', data)
       
       if (data.message === "success") {
         await checkAuth()
       } else {
-        console.log('auth: ошибка аутентификации', data)
         setLoading(false)
       }
     } catch (error) {
-      console.log('auth: ошибка', error)
       setLoading(false)
     }
   }
 
   const refreshUserData = async () => {
     try {
-      console.log('refreshUserData: начинаем обновление данных пользователя')
       await checkAuth()
-      console.log('refreshUserData: данные пользователя обновлены', user)
     } catch (error) {
-      console.log('refreshUserData: ошибка', error)
+      // Ошибка обновления данных пользователя
     }
   }
 

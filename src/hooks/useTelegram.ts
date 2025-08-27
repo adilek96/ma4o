@@ -50,7 +50,6 @@ export function useTelegram(): UseTelegramReturn {
                 if (userParam) {
                   const userData: TelegramUser = JSON.parse(userParam);
                   setUser(userData);
-                  console.log("Telegram user data:", userData);
                   
                   // Устанавливаем язык пользователя
                   if (userData.language_code) {
@@ -113,7 +112,7 @@ export function useTelegram(): UseTelegramReturn {
             };
           }
         } else {
-          console.log("Не в Telegram WebApp");
+          // Не в Telegram WebApp
         }
       } catch (error) {
         console.error("Ошибка при инициализации Telegram:", error);
