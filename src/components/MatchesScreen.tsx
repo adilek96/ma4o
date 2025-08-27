@@ -2,37 +2,37 @@ const mockMatches = [
   {
     id: 1,
     name: "Anna",
-    image: "/placeholder.svg?height=80&width=80",
+    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face",
     isNew: true,
   },
   {
     id: 2,
     name: "Maria",
-    image: "/placeholder.svg?height=80&width=80",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face",
     isNew: false,
   },
   {
     id: 3,
     name: "Sofia",
-    image: "/placeholder.svg?height=80&width=80",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face",
     isNew: true,
   },
   {
     id: 4,
     name: "Elena",
-    image: "/placeholder.svg?height=80&width=80",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face",
     isNew: false,
   },
   {
     id: 5,
     name: "Kate",
-    image: "/placeholder.svg?height=80&width=80",
+    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=80&h=80&fit=crop&crop=face",
     isNew: false,
   },
   {
     id: 6,
     name: "Lisa",
-    image: "/placeholder.svg?height=80&width=80",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face",
     isNew: true,
   },
 ];
@@ -83,7 +83,7 @@ export default function MatchesScreen({ language }: MatchesScreenProps) {
 
             <div className="w-20 h-20 mx-auto mb-3 ring-4 ring-white/20 transition-all duration-300 hover:ring-white/40 rounded-full overflow-hidden">
               <img
-                src={match.image || "/placeholder.svg"}
+                src={match.image}
                 alt={match.name}
                 className="w-full h-full object-cover"
               />

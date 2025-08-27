@@ -319,16 +319,9 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
           <div className="absolute -inset-1 rounded-full bg-[conic-gradient(var(--ring),transparent_60%)] blur-sm opacity-70 animate-[spin_8s_linear_infinite]"></div>
           <div className="relative w-full h-full ring-4 ring-white/20 transition-all duration-300 hover:ring-white/40 rounded-full overflow-hidden">
             <img
-              src={
-                mainPhoto
-                  ? `/uploads/${mainPhoto.url}`
-                  : "/placeholder.svg?height=128&width=128"
-              }
+              src={mainPhoto ? `/uploads/${mainPhoto.url}` : ""}
               alt="Profile"
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder.svg?height=128&width=128";
-              }}
             />
           </div>
         </div>
