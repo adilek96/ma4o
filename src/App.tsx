@@ -220,6 +220,23 @@ function App() {
     );
   }
 
+  // Показываем сообщение об ошибке, если в продакшене нет пользователя
+  if (import.meta.env.VITE_APPLICATION === "production" && !user && !loading) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-4">Ошибка аутентификации</h2>
+          <p className="text-gray-600 mb-4">
+            Не удалось получить данные пользователя из Telegram.
+          </p>
+          <p className="text-sm text-gray-500">
+            Пожалуйста, убедитесь, что вы открыли приложение через Telegram.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-col  justify-center items-center">

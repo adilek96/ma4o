@@ -62,24 +62,34 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-
   const aplication = import.meta.env.VITE_APPLICATION;
   const initDataDev = import.meta.env.VITE_INIT_DATA_DEV;
   const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
   const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
   const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
 
-
-
-
-  // Перемещаем вызов хука на верхний уровень
-  const rawInitData = window.Telegram?.WebApp && aplication === "production" ? useRawInitData() : initDataDev
+  // Получаем данные Telegram только в продакшене
+  const rawInitData = useRawInitData();
   
-  // Определяем initData на основе доступности Telegram WebApp
-  const initData = window.Telegram?.WebApp && aplication === "production"
-    ? rawInitData as string
-    : initDataDev 
+  // Определяем initData на основе окружения
+  const getInitData = () => {
+    if (aplication === "production") {
+      // В продакшене используем только реальные данные Telegram
+      if (window.Telegram?.WebApp?.initData) {
+        return window.Telegram.WebApp.initData;
+      }
+      if (rawInitData) {
+        return rawInitData as string;
+      }
+      // Если нет данных Telegram, возвращаем null
+      return null;
+    } else {
+      // В разработке используем dev данные
+      return initDataDev;
+    }
+  };
 
+  const initData = getInitData();
 
   const checkAuth = async () => {
     try {
@@ -128,20 +138,30 @@ export function useAuth() {
 
   const auth = async () => {
     try {
-        const res = await fetch(`${baseUrl}/api/v1/auth/tg`, { 
-            method: 'POST', 
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }, 
-            body: JSON.stringify({ initData }),
-            credentials: 'include'
-        })
+      // Проверяем, есть ли данные для аутентификации
+      if (!initData) {
+        console.log('auth: нет данных для аутентификации')
+        setLoading(false)
+        return
+      }
+
+      const res = await fetch(`${baseUrl}/api/v1/auth/tg`, { 
+          method: 'POST', 
+          headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+          }, 
+          body: JSON.stringify({ initData }),
+          credentials: 'include'
+      })
       const data = await res.json()
       console.log('auth: ответ от сервера', data)
       
       if (data.message === "success") {
         await checkAuth()
+      } else {
+        console.log('auth: ошибка аутентификации', data)
+        setLoading(false)
       }
     } catch (error) {
       console.log('auth: ошибка', error)
@@ -160,8 +180,12 @@ export function useAuth() {
   }
 
   useEffect(() => {
-  
-    checkAuth()
+    // Добавляем небольшую задержку для инициализации Telegram WebApp
+    const timer = setTimeout(() => {
+      checkAuth()
+    }, 100);
+    
+    return () => clearTimeout(timer)
   }, [initData]); // Добавляем initData в зависимости
  
   return { user, loading, refreshUserData }
