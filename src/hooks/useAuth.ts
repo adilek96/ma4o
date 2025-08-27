@@ -52,6 +52,7 @@ type User = {
     id: string
     userId: string
     url: string
+    isMain?: boolean
     createdAt: string
     updatedAt: string
   }[]
@@ -79,12 +80,11 @@ export function useAuth() {
     ? rawInitData as string
     : initDataDev 
 
-    console.log("initData", initData)
 
   const checkAuth = async () => {
     try {
       const res = await fetch(`${baseUrl}/api/v1/user/me`, { 
-        credentials: 'include' 
+        credentials: 'include'
       })
       const data = await res.json()
       console.log('checkAuth: ответ от сервера', data)
@@ -149,10 +149,20 @@ export function useAuth() {
     }
   }
 
+  const refreshUserData = async () => {
+    try {
+      console.log('refreshUserData: начинаем обновление данных пользователя')
+      await checkAuth()
+      console.log('refreshUserData: данные пользователя обновлены', user)
+    } catch (error) {
+      console.log('refreshUserData: ошибка', error)
+    }
+  }
+
   useEffect(() => {
   
     checkAuth()
   }, [initData]); // Добавляем initData в зависимости
  
-  return { user, loading }
+  return { user, loading, refreshUserData }
 }

@@ -50,6 +50,7 @@ export const en = {
         "lastName": "Last Name",
         "lastNamePlaceholder": "Enter your last name",
         "birthDate": "Date of Birth",
+        "birthDatePlaceholder": "Select date",
         "gender": "Gender",
         "male": "Male",
         "female": "Female",
@@ -124,13 +125,18 @@ export const en = {
         "next": "Next",
         "finish": "Finish",
         "saving": "Saving...",
+        "save": "Save",
+        "cancel": "Cancel",
         "step": "Step",
         "of": "of",
-        "complete": "complete"
+        "complete": "complete",
+        "editProfile": "Edit Profile",
+        "editDescription": "Update your information"
       },
       "validation": {
         "userIdRequired": "User ID is required",
-
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
         "birthDateRequired": "Date of birth is required",
         "ageRequired": "Age must be at least 18 years",
         "genderRequired": "Gender is required",
@@ -156,8 +162,10 @@ export const en = {
     "profile": {
       "bioTitle": "Bio",
       "interests": "Interests",
-             "photos": "Photos",
-       "addPhotos": "Add Photos",
+                   "photos": "Photos",
+      "addPhotos": "Add Photos",
+      "editPhotos": "Edit Photos",
+      "noPhotos": "No photos",
        "theme": "Theme",
        "telegramTheme": "Telegram",
       "languageLabel": "Language",
@@ -267,6 +275,13 @@ export const en = {
      "invalidFileType": "Invalid file type. Please select an image.",
      "fileTooLarge": "File too large. Maximum size: 5MB",
      "cancel": "Cancel",
-     "save": "Save"
+     "save": "Save",
+     "next": "Next",
+     "confirmMainPhoto": "Make main photo?",
+     "confirmMainPhotoText": "Do you really want to make this photo the main one?",
+     "yes": "Yes",
+     "no": "No",
+     "updateError": "Photo update error",
+     "noPhotos": "No photos"
    }
  }

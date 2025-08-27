@@ -63,6 +63,8 @@ export const OCCUPATION_OPTIONS: { value: Occupation; label: string }[] = [
 export interface ProfileData {
   userId: string;
   // Основная информация
+  firstName: string;
+  lastName: string;
   gender: string;
   birthDate: string;
   height: number;

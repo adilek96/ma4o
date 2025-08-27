@@ -5,12 +5,14 @@ import {
   uploadFileAction,
   deletePhotoAction,
   type MultipleUploadResponse,
+  updatePhotoAction,
 } from "../actions/fileUploadActions";
 
 interface Photo {
   id: string;
   url: string;
   isUploading?: boolean;
+  isMain?: boolean;
 }
 
 interface PhotoUploadFormProps {
@@ -23,29 +25,50 @@ export default function PhotoUploadForm({
   onSave,
 }: PhotoUploadFormProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
 
-  // Преобразуем фотографии из user.photos в формат Photo
-  const initialPhotos: Photo[] =
-    user?.photos?.map((photo) => ({
-      id: photo.id,
-      url: photo.url,
-      isUploading: false,
-    })) || [];
-
-  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
 
   // Обновляем фотографии при изменении данных пользователя
   useEffect(() => {
-    const updatedPhotos: Photo[] =
-      user?.photos?.map((photo) => ({
-        id: photo.id,
-        url: photo.url,
-      })) || [];
-    setPhotos(updatedPhotos);
+    if (user?.photos && user.photos.length > 0) {
+      setPhotos((prev) => {
+        // Если фотографий еще нет в состоянии, добавляем их все
+        if (prev.length === 0) {
+          const newPhotos: Photo[] = user.photos!.map((photo) => ({
+            id: photo.id,
+            url: photo.url,
+            isUploading: false,
+            isMain: photo.isMain || false,
+          }));
+          return newPhotos;
+        } else {
+          // Если фотографии уже есть, обновляем только флаг isMain, сохраняя порядок
+          const updatedPhotos = prev.map((existingPhoto) => {
+            const serverPhoto = user.photos?.find(
+              (p) => p.id === existingPhoto.id
+            );
+            if (serverPhoto) {
+              return {
+                ...existingPhoto,
+                isMain: serverPhoto.isMain || false,
+              };
+            }
+            return existingPhoto;
+          });
+          return updatedPhotos;
+        }
+      });
+    } else if (user?.photos && user.photos.length === 0) {
+      setPhotos([]);
+    } else if (!user?.photos) {
+      setPhotos([]);
+    }
   }, [user?.photos]);
 
   const handleFileUpload = useCallback(
@@ -83,9 +106,26 @@ export default function PhotoUploadForm({
           validFiles
         );
 
-        if (result.success && result.urls && result.urls.length > 0) {
-          // Обновляем страницу для получения новых данных
-          window.location.reload();
+        if (result.success && result.photoData && result.photoData.length > 0) {
+          // Обновляем фотографии с новыми URL и ID
+          setPhotos((prev) => {
+            const updatedPhotos = prev.map((photo) => {
+              const tempIndex = tempPhotos.findIndex(
+                (temp) => temp.id === photo.id
+              );
+              if (tempIndex !== -1 && result.photoData![tempIndex]) {
+                const photoInfo = result.photoData![tempIndex];
+                return {
+                  ...photo,
+                  id: photoInfo.id, // Используем реальный ID от сервера
+                  url: photoInfo.url,
+                  isUploading: false,
+                };
+              }
+              return photo;
+            });
+            return updatedPhotos;
+          });
         } else {
           // Удаляем неудачные фото
           setPhotos((prev) =>
@@ -147,8 +187,8 @@ export default function PhotoUploadForm({
       try {
         const result = await deletePhotoAction(photoId);
         if (result.success) {
-          // Обновляем страницу для получения новых данных
-          window.location.reload();
+          // Удаляем фото из состояния
+          setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
         } else {
           alert(result.error || t("photoUpload.deleteError"));
         }
@@ -159,13 +199,45 @@ export default function PhotoUploadForm({
     [t]
   );
 
-  const handleSave = () => {
+  const handlePhotoClick = useCallback((photoId: string, isMain: boolean) => {
+    if (isMain) return; // Не показываем диалог для главной фотографии
+    setSelectedPhotoId(photoId);
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmUpdatePhoto = useCallback(async () => {
+    if (!selectedPhotoId) return;
+
+    try {
+      const result = await updatePhotoAction(selectedPhotoId);
+      if (result.success) {
+        // Небольшая задержка для обработки на сервере
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Обновляем данные пользователя с сервера
+        await refreshUserData();
+      } else {
+        alert(result.error || t("photoUpload.updateError"));
+      }
+    } catch (error) {
+      alert(t("photoUpload.updateError"));
+    } finally {
+      setShowConfirmDialog(false);
+      setSelectedPhotoId(null);
+    }
+  }, [selectedPhotoId, t, refreshUserData]);
+
+  const handleCancelUpdatePhoto = useCallback(() => {
+    setShowConfirmDialog(false);
+    setSelectedPhotoId(null);
+  }, []);
+
+  const handleNext = async () => {
     onSave(photos.filter((photo) => !photo.isUploading));
+    // Обновляем данные пользователя после сохранения
+    await refreshUserData();
   };
 
-  const canSave = photos.length > 0 && uploadingCount === 0;
-
-  console.log("photos", photos);
+  const canProceed = photos.length > 0 && uploadingCount === 0;
 
   return (
     <div className="fixed inset-0 bg-background z-40 animate-in fade-in duration-300 flex flex-col">
@@ -274,56 +346,84 @@ export default function PhotoUploadForm({
           </div>
 
           {/* Загруженные фотографии */}
-          {photos.length > 0 && (
+          {photos.length > 0 ? (
             <div>
               <h3 className="font-medium text-foreground mb-4">
-                {t("photoUpload.uploadedPhotos")} ({photos.length}/6)
+                {t("photoUpload.uploadedPhotos")} ({photos.length})
               </h3>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {photos.map((photo, index) => (
-                  <div
-                    key={photo.id}
-                    className="relative aspect-square rounded-xl overflow-hidden border border-border component-bg"
-                  >
-                    <img
-                      src={photo.url}
-                      alt={`Photo ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-
-                    {photo.isUploading && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                      </div>
-                    )}
-
-                    <button
-                      onClick={() => handleDeletePhoto(photo.id)}
-                      disabled={photo.isUploading}
-                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
+                {photos.map((photo, index) => {
+                  return (
+                    <div
+                      onClick={() =>
+                        handlePhotoClick(photo.id, photo.isMain || false)
+                      }
+                      key={photo.id}
+                      className={`relative aspect-square rounded-xl overflow-hidden border component-bg transition-all duration-200 ${
+                        photo.isMain
+                          ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30 cursor-default"
+                          : "border border-border cursor-pointer hover:opacity-90 hover:border-purple-500/50"
+                      }`}
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
+                      <img
+                        src={
+                          photo.url.startsWith("http")
+                            ? photo.url
+                            : `/uploads/${photo.url}`
+                        }
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error(
+                            `Ошибка загрузки изображения: ${photo.url}`
+                          );
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
 
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                      {index + 1}
+                      {photo.isUploading && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePhoto(photo.id);
+                        }}
+                        disabled={photo.isUploading}
+                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+
+                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        {index + 1}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                {t("photoUpload.noPhotos")}
+              </p>
             </div>
           )}
 
@@ -350,22 +450,44 @@ export default function PhotoUploadForm({
 
       {/* Фиксированная кнопка внизу */}
       <div className="flex-shrink-0 component-bg border-t border-border px-4 py-4">
-        <div className="max-w-2xl mx-auto flex space-x-3">
+        <div className="max-w-2xl mx-auto">
           <button
-            onClick={onClose}
-            className="flex-1 px-6 py-3 rounded-xl border border-border component-bg text-foreground hover:border-primary/50 transition-all duration-200"
+            onClick={handleNext}
+            disabled={!canProceed}
+            className="w-full px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t("photoUpload.cancel")}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!canSave}
-            className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {t("photoUpload.save")}
+            {t("photoUpload.next")}
           </button>
         </div>
       </div>
+
+      {/* Диалог подтверждения */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-background rounded-2xl border border-border p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold text-foreground mb-4">
+              {t("photoUpload.confirmMainPhoto")}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              {t("photoUpload.confirmMainPhotoText")}
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCancelUpdatePhoto}
+                className="flex-1 px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium"
+              >
+                {t("photoUpload.no")}
+              </button>
+              <button
+                onClick={handleConfirmUpdatePhoto}
+                className="flex-1 px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium"
+              >
+                {t("photoUpload.yes")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

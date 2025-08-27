@@ -11,6 +11,15 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  server: {
+    proxy: {
+      '/uploads': {
+        target: 'http://194.163.151.112:9015',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/uploads/, '')
+      }
+    }
+  }
 
 })
 

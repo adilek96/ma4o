@@ -4,9 +4,9 @@ import Header from "./components/Header";
 import DiscoverScreen from "./components/DiscoverScreen";
 import MatchesScreen from "./components/MatchesScreen";
 import ProfileScreen from "./components/ProfileScreen";
-import EditProfileScreen from "./components/EditProfileScreen";
 import ProfileSetupForm from "./components/ProfileSetupForm";
 import PreferencesSetupForm from "./components/PreferencesSetupForm";
+import PhotoUploadForm from "./components/PhotoUploadForm";
 import { init } from "@telegram-apps/sdk-react";
 import { useAuth } from "./hooks/useAuth";
 import { useTelegram } from "./hooks/useTelegram";
@@ -14,6 +14,7 @@ import { useTheme } from "./components/ThemeProvider";
 import { TelegramDebug } from "./components/TelegramDebug";
 import {
   createProfileAction,
+  updateProfileAction,
   type ProfileData,
 } from "./actions/profileActions";
 import {
@@ -27,6 +28,7 @@ function App() {
   const [active, setActive] = useState<Screen>("discover");
   const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [showPreferencesSetup, setShowPreferencesSetup] = useState(false);
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const { setTheme } = useTheme();
   const {
     isTelegram,
@@ -55,30 +57,43 @@ function App() {
     }
   }, [isTelegram, telegramTheme, setTheme]);
 
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUserData } = useAuth();
 
   useEffect(() => {
-    console.log("user", user);
-    console.log("user.isNew:", user?.isNew);
-    console.log("user.isPreferences:", user?.isPreferences);
-
     // Показываем форму заполнения профиля, если пользователь новый
     if (user && user.isNew) {
-      console.log("Показываем форму профиля");
       setShowProfileSetup(true);
       setShowPreferencesSetup(false);
+      setShowPhotoUpload(false);
     }
     // Показываем форму предпочтений, если пользователь не новый и предпочтения НЕ заполнены
     else if (user && !user.isNew && !user.isPreferences) {
-      console.log("Показываем форму предпочтений");
       setShowProfileSetup(false);
       setShowPreferencesSetup(true);
+      setShowPhotoUpload(false);
     }
-    // Если пользователь не новый и предпочтения заполнены, скрываем обе формы
-    else if (user && !user.isNew && user.isPreferences) {
-      console.log("Скрываем обе формы");
+    // Показываем форму фотографий, если предпочтения заполнены, но нет фотографий
+    else if (
+      user &&
+      !user.isNew &&
+      user.isPreferences &&
+      (!user.photos || user.photos.length === 0)
+    ) {
       setShowProfileSetup(false);
       setShowPreferencesSetup(false);
+      setShowPhotoUpload(true);
+    }
+    // Если пользователь не новый, предпочтения заполнены и есть фотографии, скрываем все формы
+    else if (
+      user &&
+      !user.isNew &&
+      user.isPreferences &&
+      user.photos &&
+      user.photos.length > 0
+    ) {
+      setShowProfileSetup(false);
+      setShowPreferencesSetup(false);
+      setShowPhotoUpload(false);
     }
   }, [user]);
 
@@ -88,17 +103,76 @@ function App() {
       const result = await createProfileAction(profileData);
 
       if (result.success) {
-        console.log("Профиль успешно создан:", result.profileId);
         // После успешного сохранения скрываем форму
         setShowProfileSetup(false);
-        // Можно также обновить данные пользователя в store
-        // или перезагрузить данные пользователя
+        // Обновляем данные пользователя, чтобы useEffect сработал и показал форму предпочтений
+        await refreshUserData();
       } else {
         console.error("Ошибка при создании профиля:", result.error);
         // Здесь можно добавить обработку ошибок для пользователя
       }
     } catch (error) {
       console.error("Ошибка при сохранении профиля:", error);
+    }
+  };
+
+  // Функция для преобразования данных профиля из API в ProfileData
+  const transformProfileData = (
+    apiProfile: any,
+    userData: any
+  ): ProfileData => {
+    // Преобразуем пол в нижний регистр
+    const gender = apiProfile.gender ? apiProfile.gender.toLowerCase() : "";
+
+    // Преобразуем дату в формат YYYY-MM-DD для input type="date"
+    let birthDate = "";
+    if (apiProfile.birthDate) {
+      try {
+        const date = new Date(apiProfile.birthDate);
+        birthDate = date.toISOString().split("T")[0]; // Получаем только дату без времени
+      } catch (error) {
+        birthDate = "";
+      }
+    }
+
+    const transformedData = {
+      userId: apiProfile.userId,
+      firstName: userData.firstName || "",
+      lastName: userData.lastName || "",
+      gender: gender,
+      birthDate: birthDate,
+      height: apiProfile.height || 170,
+      country: apiProfile.country || "",
+      city: apiProfile.city || "",
+      latitude: apiProfile.latitude || 0,
+      longitude: apiProfile.longitude || 0,
+      languages: apiProfile.languages || [],
+      bio: apiProfile.bio || "",
+      interests: apiProfile.interests || [],
+      education: apiProfile.education || undefined,
+      occupation: apiProfile.occupation || undefined,
+      smoking: apiProfile.smoking || undefined,
+      drinking: apiProfile.drinking || undefined,
+    };
+    return transformedData;
+  };
+
+  const handleProfileEditSubmit = async (profileData: ProfileData) => {
+    try {
+      // Вызываем API для обновления профиля
+      const result = await updateProfileAction(profileData);
+
+      if (result.success) {
+        // После успешного обновления возвращаемся к профилю
+        setActive("profile");
+        // Обновляем данные пользователя
+        await refreshUserData();
+      } else {
+        console.error("Ошибка при обновлении профиля:", result.error);
+        // Здесь можно добавить обработку ошибок для пользователя
+      }
+    } catch (error) {
+      console.error("Ошибка при обновлении профиля:", error);
     }
   };
 
@@ -110,17 +184,27 @@ function App() {
       const result = await createPreferencesAction(preferencesData);
 
       if (result.success) {
-        console.log("Предпочтения успешно созданы:", result.preferencesId);
         // После успешного сохранения скрываем форму
         setShowPreferencesSetup(false);
-        // Можно также обновить данные пользователя в store
-        // или перезагрузить данные пользователя
+        // Обновляем данные пользователя
+        await refreshUserData();
       } else {
         console.error("Ошибка при создании предпочтений:", result.error);
         // Здесь можно добавить обработку ошибок для пользователя
       }
     } catch (error) {
       console.error("Ошибка при сохранении предпочтений:", error);
+    }
+  };
+
+  const handlePhotoUploadComplete = async () => {
+    try {
+      // Скрываем форму загрузки фотографий
+      setShowPhotoUpload(false);
+      // Обновляем данные пользователя
+      await refreshUserData();
+    } catch (error) {
+      console.error("Ошибка при завершении загрузки фотографий:", error);
     }
   };
 
@@ -148,9 +232,27 @@ function App() {
           {active === "profile" && (
             <ProfileScreen onEdit={() => setActive("editProfile")} />
           )}
-          {active === "editProfile" && (
-            <EditProfileScreen onBack={() => setActive("profile")} />
-          )}
+          {active === "editProfile" &&
+            user &&
+            (() => {
+              const transformedData = user.profile
+                ? transformProfileData(user.profile, user)
+                : undefined;
+
+              return (
+                <ProfileSetupForm
+                  onSubmit={handleProfileEditSubmit}
+                  onCancel={() => setActive("profile")}
+                  userId={user.id}
+                  isEditMode={true}
+                  initialData={transformedData}
+                  userData={{
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                  }}
+                />
+              );
+            })()}
         </main>
         <BottomNavigation
           active={active === "editProfile" ? "profile" : active}
@@ -164,6 +266,10 @@ function App() {
           onSubmit={handleProfileSetupSubmit}
           onCancel={() => {}} // Пустая функция, так как отмена недоступна
           userId={user.id}
+          userData={{
+            firstName: user.firstName,
+            lastName: user.lastName,
+          }}
         />
       )}
 
@@ -173,6 +279,14 @@ function App() {
           onSubmit={handlePreferencesSetupSubmit}
           onCancel={() => {}} // Пустая функция, так как отмена недоступна
           userId={user.id}
+        />
+      )}
+
+      {/* Форма загрузки фотографий */}
+      {showPhotoUpload && user && (
+        <PhotoUploadForm
+          onClose={() => {}} // Пустая функция, так как отмена недоступна
+          onSave={handlePhotoUploadComplete}
         />
       )}
 

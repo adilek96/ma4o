@@ -45,61 +45,42 @@ export async function createProfileAction(profileData: ProfileData): Promise<{ s
   }
 }
 
+// Экшен для обновления профиля
+export async function updateProfileAction(profileData: ProfileData): Promise<{ success: boolean; error?: string; profileId?: string }> {
+  try {
+    // Здесь будет реальный API запрос
+    const aplication = import.meta.env.VITE_APPLICATION;
+    const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
+    const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
+    const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
 
-// Экшен для валидации данных профиля
-export async function validateProfileData(profileData: ProfileData): Promise<{ isValid: boolean; errors: Record<string, string> }> {
-  const errors: Record<string, string> = {};
+    console.log("profileData for update", profileData);
 
-  // Валидация userId
-  if (!profileData.userId) {
-    errors.userId = 'ID пользователя обязателен';
-  }
+    const response = await fetch(`${baseUrl}/api/v1/user/profile/update`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(profileData),
+    });
 
-  // Валидация основной информации
-  if (!profileData.gender) {
-    errors.gender = 'Пол обязателен для заполнения';
-  }
-  if (!profileData.birthDate) {
-    errors.birthDate = 'Дата рождения обязательна';
-  } else {
-    const birthDate = new Date(profileData.birthDate);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    if (age < 18) {
-      errors.birthDate = 'Возраст должен быть не менее 18 лет';
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Ошибка при обновлении профиля');
     }
-  }
-  if (profileData.height < 120 || profileData.height > 210) {
-    errors.height = 'Рост должен быть от 120 до 210 см';
-  }
 
-  // Валидация локации
-  if (!profileData.country.trim()) {
-    errors.country = 'Страна обязательна для заполнения';
+    const data = await response.json();
+    
+    return {
+      success: true,
+      profileId: data.profileId,
+    };
+  } catch (error) {
+    console.error('Ошибка при обновлении профиля:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Неизвестная ошибка',
+    };
   }
-  if (!profileData.city.trim()) {
-    errors.city = 'Город обязателен для заполнения';
-  }
-
-  // Валидация дополнительной информации
-  if (profileData.interests.length === 0) {
-    errors.interests = 'Выберите хотя бы один интерес';
-  }
-  if (profileData.languages.length === 0) {
-    errors.languages = 'Выберите хотя бы один язык';
-  }
-  if (!profileData.bio.trim()) {
-    errors.bio = 'Биография обязательна для заполнения';
-  } else if (profileData.bio.length < 10) {
-    errors.bio = 'Биография должна содержать минимум 10 символов';
-  } else if (profileData.bio.length > 500) {
-    errors.bio = 'Биография не должна превышать 500 символов';
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  };
 }
-
-

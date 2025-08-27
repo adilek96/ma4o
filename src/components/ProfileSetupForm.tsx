@@ -2,17 +2,27 @@ import { useState, useEffect, useOptimistic, useTransition } from "react";
 import { useTranslation } from "react-i18next";
 import {
   createProfileAction,
+  updateProfileAction,
   type ProfileData,
   SMOKING_OPTIONS,
   DRINKING_OPTIONS,
   EDUCATION_OPTIONS,
   OCCUPATION_OPTIONS,
 } from "../actions/profileActions";
+import { interests, languages } from "../constants";
 
 interface ProfileSetupFormProps {
   onSubmit: (data: ProfileData) => void;
   onCancel: () => void;
   userId: string;
+  // Новые пропсы для режима редактирования
+  isEditMode?: boolean;
+  initialData?: ProfileData;
+  // Данные пользователя для заполнения имени и фамилии
+  userData?: {
+    firstName?: string;
+    lastName?: string;
+  };
 }
 
 interface Country {
@@ -20,56 +30,20 @@ interface Country {
   name: string;
 }
 
-const interests = [
-  "sports",
-  "music",
-  "movies",
-  "books",
-  "travel",
-  "cooking",
-  "art",
-  "technology",
-  "nature",
-  "photography",
-  "dancing",
-  "yoga",
-  "gaming",
-  "fashion",
-  "cars",
-  "animals",
-];
-
-const languages = [
-  "ru",
-  "en",
-  "es",
-  "fr",
-  "de",
-  "it",
-  "zh",
-  "ja",
-  "ko",
-  "ar",
-  "pt",
-  "tr",
-  "pl",
-  "cs",
-  "hu",
-  "fi",
-  "sv",
-  "no",
-  "da",
-  "nl",
-];
-
 export default function ProfileSetupForm({
   onSubmit,
+  onCancel,
   userId,
+  isEditMode = false,
+  initialData,
+  userData,
 }: ProfileSetupFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProfileData>({
     userId: userId,
     // Основная информация
+    firstName: userData?.firstName || "",
+    lastName: userData?.lastName || "",
     gender: "",
     birthDate: "",
     height: 170,
@@ -93,6 +67,121 @@ export default function ProfileSetupForm({
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [addressReceived, setAddressReceived] = useState(false);
   const { t, i18n } = useTranslation();
+
+  // Заполняем форму начальными данными при редактировании
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      // Убеждаемся, что пол в нижнем регистре
+      const gender = initialData.gender ? initialData.gender.toLowerCase() : "";
+
+      // Убеждаемся, что дата в правильном формате
+      let birthDate = "";
+      if (initialData.birthDate) {
+        try {
+          const date = new Date(initialData.birthDate);
+          birthDate = date.toISOString().split("T")[0];
+        } catch (error) {
+          birthDate = initialData.birthDate;
+        }
+      }
+
+      const newFormData = {
+        userId: userId,
+        // Основная информация
+        firstName: initialData.firstName || "",
+        lastName: initialData.lastName || "",
+        gender: gender,
+        birthDate: birthDate,
+        height: initialData.height || 170,
+        // Локация
+        country: initialData.country || "",
+        city: initialData.city || "",
+        latitude: initialData.latitude || 0,
+        longitude: initialData.longitude || 0,
+        // Дополнительная информация
+        languages: initialData.languages || [],
+        bio: initialData.bio || "",
+        interests: initialData.interests || [],
+        education: initialData.education,
+        occupation: initialData.occupation,
+        smoking: initialData.smoking,
+        drinking: initialData.drinking,
+      };
+      setFormData(newFormData);
+    }
+  }, [isEditMode, initialData, userId]);
+
+  // Принудительное обновление при изменении initialData
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      // Убеждаемся, что пол в нижнем регистре
+      const gender = initialData.gender ? initialData.gender.toLowerCase() : "";
+
+      // Убеждаемся, что дата в правильном формате
+      let birthDate = "";
+      if (initialData.birthDate) {
+        try {
+          const date = new Date(initialData.birthDate);
+          birthDate = date.toISOString().split("T")[0];
+        } catch (error) {
+          birthDate = initialData.birthDate;
+        }
+      }
+
+      const updatedFormData = {
+        ...formData,
+        firstName: initialData.firstName || "",
+        lastName: initialData.lastName || "",
+        gender: gender,
+        birthDate: birthDate,
+        height: initialData.height || 170,
+        country: initialData.country || "",
+        city: initialData.city || "",
+        latitude: initialData.latitude || 0,
+        longitude: initialData.longitude || 0,
+        languages: initialData.languages || [],
+        bio: initialData.bio || "",
+        interests: initialData.interests || [],
+        education: initialData.education,
+        occupation: initialData.occupation,
+        smoking: initialData.smoking,
+        drinking: initialData.drinking,
+      };
+
+      setFormData(updatedFormData);
+    }
+  }, [initialData, isEditMode]);
+
+  // Дополнительный useEffect для принудительного обновления при изменении initialData
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      // Убеждаемся, что пол в нижнем регистре
+      const gender = initialData.gender ? initialData.gender.toLowerCase() : "";
+
+      // Убеждаемся, что дата в правильном формате
+      let birthDate = "";
+      if (initialData.birthDate) {
+        try {
+          const date = new Date(initialData.birthDate);
+          birthDate = date.toISOString().split("T")[0];
+        } catch (error) {
+          birthDate = initialData.birthDate;
+        }
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        gender: gender,
+        birthDate: birthDate,
+        height: initialData.height || 170,
+      }));
+    }
+  }, [
+    initialData?.gender,
+    initialData?.birthDate,
+    initialData?.height,
+    isEditMode,
+  ]);
 
   // Используем useOptimistic для оптимистичных обновлений
   const [, addOptimisticProfile] = useOptimistic<
@@ -160,6 +249,10 @@ export default function ProfileSetupForm({
 
     if (step === 1) {
       // Валидация основной информации
+      if (!formData.firstName.trim())
+        newErrors.firstName = t("form.validation.firstNameRequired");
+      if (!formData.lastName.trim())
+        newErrors.lastName = t("form.validation.lastNameRequired");
       if (!formData.birthDate)
         newErrors.birthDate = t("form.validation.birthDateRequired");
       if (!formData.gender)
@@ -224,15 +317,28 @@ export default function ProfileSetupForm({
         // Запускаем реальный запрос в транзиции
         startTransition(async () => {
           try {
-            const result = await createProfileAction(formData);
+            const result = isEditMode
+              ? await updateProfileAction(formData)
+              : await createProfileAction(formData);
+
             if (result.success) {
               onSubmit(formData);
             } else {
-              console.error("Ошибка создания профиля:", result.error);
+              console.error(
+                isEditMode
+                  ? "Ошибка обновления профиля:"
+                  : "Ошибка создания профиля:",
+                result.error
+              );
               // Здесь можно добавить обработку ошибок
             }
           } catch (error) {
-            console.error("Неожиданная ошибка при создании профиля:", error);
+            console.error(
+              isEditMode
+                ? "Неожиданная ошибка при обновлении профиля:"
+                : "Неожиданная ошибка при создании профиля:",
+              error
+            );
           }
         });
       }
@@ -246,7 +352,10 @@ export default function ProfileSetupForm({
   };
 
   const handleInputChange = (name: keyof ProfileData, value: any) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      return newData;
+    });
     // Очищаем ошибку при изменении поля
     if (errors[name]) {
       setErrors((prev) => {
@@ -392,19 +501,64 @@ export default function ProfileSetupForm({
 
       <div>
         <label className="block text-sm font-medium mb-3 text-foreground">
-          {t("form.step1.birthDate")} *
+          {t("form.step1.firstName")} *
         </label>
         <input
-          type="date"
-          name="birthDate"
-          value={formData.birthDate}
-          onChange={(e) => handleInputChange("birthDate", e.target.value)}
+          type="text"
+          name="firstName"
+          value={formData.firstName}
+          onChange={(e) => handleInputChange("firstName", e.target.value)}
           className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
-            errors.birthDate
+            errors.firstName
               ? "border-destructive focus:border-destructive focus:ring-destructive/20"
               : "border-border focus:border-border focus:ring-border/20 component-bg"
           }`}
+          placeholder={t("form.step1.firstNamePlaceholder")}
         />
+        {errors.firstName && (
+          <p className="text-destructive text-sm mt-2">{errors.firstName}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step1.lastName")} *
+        </label>
+        <input
+          type="text"
+          name="lastName"
+          value={formData.lastName}
+          onChange={(e) => handleInputChange("lastName", e.target.value)}
+          className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
+            errors.lastName
+              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+              : "border-border focus:border-border focus:ring-border/20 component-bg"
+          }`}
+          placeholder={t("form.step1.lastNamePlaceholder")}
+        />
+        {errors.lastName && (
+          <p className="text-destructive text-sm mt-2">{errors.lastName}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-foreground">
+          {t("form.step1.birthDate")} *
+        </label>
+        <div className="relative">
+          <input
+            type="date"
+            name="birthDate"
+            value={formData.birthDate || ""}
+            onChange={(e) => handleInputChange("birthDate", e.target.value)}
+            className={`w-full px-4 py-3 rounded-2xl border-2 focus:outline-none focus:ring-2 transition-all duration-200 ${
+              errors.birthDate
+                ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                : "border-border focus:border-border focus:ring-border/20 component-bg"
+            }`}
+          />
+        </div>
+
         {errors.birthDate && (
           <p className="text-destructive text-sm mt-2">{errors.birthDate}</p>
         )}
@@ -414,24 +568,41 @@ export default function ProfileSetupForm({
         <label className="block text-sm font-medium mb-3 text-foreground">
           {t("form.step1.gender")} *
         </label>
-        <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-3">
           {["male", "female", "other"].map((gender) => (
-            <label
+            <button
               key={gender}
-              className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+              type="button"
+              onClick={() => handleInputChange("gender", gender)}
+              className={`p-4 rounded-2xl border-2 transition-all duration-200 font-medium ${
+                formData.gender === gender
+                  ? "border-purple-500 component-bg bg-gradient-to-r from-purple-500/10 to-purple-600/10 neon-purple-soft text-purple-600 dark:text-purple-400"
+                  : "border-border component-bg hover:border-border/50 text-foreground"
+              }`}
             >
-              <input
-                type="radio"
-                name="gender"
-                value={gender}
-                checked={formData.gender === gender}
-                onChange={(e) => handleInputChange("gender", e.target.value)}
-                className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
-              />
-              <span className="capitalize text-foreground">
-                {t(`form.step1.${gender}`)}
-              </span>
-            </label>
+              <div className="flex flex-col items-center space-y-2">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    formData.gender === gender
+                      ? "bg-purple-500 text-white"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {gender === "male" && (
+                    <span className="text-lg font-bold">♂</span>
+                  )}
+                  {gender === "female" && (
+                    <span className="text-lg font-bold">♀</span>
+                  )}
+                  {gender === "other" && (
+                    <span className="text-lg font-bold">⚧</span>
+                  )}
+                </div>
+                <span className="text-sm capitalize">
+                  {t(`form.step1.${gender}`)}
+                </span>
+              </div>
+            </button>
           ))}
         </div>
         {errors.gender && (
@@ -443,22 +614,51 @@ export default function ProfileSetupForm({
         <label className="block text-sm font-medium mb-3 text-foreground">
           {t("form.step1.height")} *
         </label>
-        <div className="p-4 rounded-2xl border-2 border-border component-bg">
-          <div className="flex items-center space-x-4">
-            <input
-              type="range"
-              name="height"
-              min="120"
-              max="210"
-              value={formData.height}
-              onChange={(e) =>
-                handleInputChange("height", parseInt(e.target.value))
-              }
-              className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-            />
-            <span className="text-lg font-bold text-foreground min-w-[4rem] text-center">
-              {formData.height} см
-            </span>
+        <div className="space-y-4">
+          {/* Кастомный ввод */}
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-muted-foreground">Введите рост:</span>
+            <div className="flex items-center space-x-2">
+              <input
+                type="number"
+                min="120"
+                max="210"
+                value={formData.height || ""}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (value >= 120 && value <= 210) {
+                    handleInputChange("height", value);
+                  }
+                }}
+                className="w-20 px-3 py-2 rounded-lg border-2 border-border component-bg text-center focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                placeholder="170"
+              />
+              <span className="text-sm text-muted-foreground">см</span>
+            </div>
+          </div>
+
+          {/* Слайдер для точной настройки */}
+          <div className="p-4 rounded-2xl border-2 border-border component-bg">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-muted-foreground">120</span>
+              <input
+                type="range"
+                name="height"
+                min="120"
+                max="210"
+                value={formData.height || 170}
+                onChange={(e) =>
+                  handleInputChange("height", parseInt(e.target.value))
+                }
+                className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+              />
+              <span className="text-sm text-muted-foreground">210</span>
+            </div>
+            <div className="text-center mt-2">
+              <span className="text-lg font-bold text-foreground">
+                {formData.height || 170} см
+              </span>
+            </div>
           </div>
         </div>
         {errors.height && (
@@ -852,12 +1052,18 @@ export default function ProfileSetupForm({
             )}
             <div>
               <h1 className="text-lg font-bold text-foreground">
-                {t("form.navigation.step")} {currentStep}{" "}
-                {t("form.navigation.of")} 4
+                {isEditMode
+                  ? t("form.navigation.editProfile")
+                  : `${t("form.navigation.step")} ${currentStep} ${t(
+                      "form.navigation.of"
+                    )} 4`}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {Math.round((currentStep / 4) * 100)}%{" "}
-                {t("form.navigation.complete")}
+                {isEditMode
+                  ? t("form.navigation.editDescription")
+                  : `${Math.round((currentStep / 4) * 100)}% ${t(
+                      "form.navigation.complete"
+                    )}`}
               </p>
             </div>
           </div>
@@ -886,22 +1092,41 @@ export default function ProfileSetupForm({
       {/* Фиксированная кнопка внизу */}
       <div className="flex-shrink-0 component-bg border-t border-border px-4 py-4">
         <div className="max-w-md mx-auto">
-          <button
-            onClick={handleNext}
-            disabled={isPending}
-            className="w-full px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isPending ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                <span>{t("form.navigation.saving")}</span>
-              </div>
-            ) : currentStep === 4 ? (
-              t("form.navigation.finish")
-            ) : (
-              t("form.navigation.next")
+          <div className="flex gap-3">
+            {/* Показываем кнопку отмены только в режиме редактирования или на шагах после первого */}
+            {(isEditMode || currentStep > 1) && (
+              <button
+                onClick={currentStep === 1 ? onCancel : handleBack}
+                className="flex-1 px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground hover:border-red-500/50 transition-all duration-200 font-medium"
+              >
+                {currentStep === 1
+                  ? t("form.navigation.cancel")
+                  : t("form.navigation.back")}
+              </button>
             )}
-          </button>
+            <button
+              onClick={handleNext}
+              disabled={isPending}
+              className={`px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                isEditMode || currentStep > 1 ? "flex-1" : "w-full"
+              }`}
+            >
+              {isPending ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                  <span>{t("form.navigation.saving")}</span>
+                </div>
+              ) : currentStep === 4 ? (
+                isEditMode ? (
+                  t("form.navigation.save")
+                ) : (
+                  t("form.navigation.finish")
+                )
+              ) : (
+                t("form.navigation.next")
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

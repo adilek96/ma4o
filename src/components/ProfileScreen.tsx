@@ -6,11 +6,12 @@ import { useAuth } from "../hooks/useAuth";
 import { ru } from "../../translation/ru";
 import { en } from "../../translation/en";
 import PhotoUploadForm from "./PhotoUploadForm";
+import { interests, languages } from "../constants";
 
 export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   const { i18n } = useTranslation();
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUserData } = useAuth();
 
   const lang = i18n.language === "ru" ? "ru" : "en";
   const changeLanguage = (next: "en" | "ru") => {
@@ -53,9 +54,10 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   const userAge = profile?.birthDate ? calculateAge(profile.birthDate) : null;
   const userInterests = profile?.interests || [];
   const userBio = profile?.bio || "";
-  const userPhotos = new Array(6).fill(
-    "/placeholder.svg?height=200&width=200"
-  ) as string[];
+  const userPhotos = user?.photos || [];
+
+  // Получаем главную фотографию профиля
+  const mainPhoto = userPhotos.find((photo) => photo.isMain) || userPhotos[0];
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [locationUpdating, setLocationUpdating] = useState(false);
@@ -166,6 +168,24 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   // Функция для получения названия рода деятельности
   const getOccupationName = (occupation: string) => {
     return t(`profile.occupation.${occupation}`) || t("profile.notSpecified");
+  };
+
+  // Функция для получения переведенного названия интереса
+  const getInterestName = (interest: string) => {
+    // Проверяем, что интерес существует в нашем списке
+    if (interests.includes(interest as any)) {
+      return t(`interests.${interest}`);
+    }
+    return interest; // Возвращаем оригинальное значение, если перевод не найден
+  };
+
+  // Функция для получения переведенного названия языка
+  const getLanguageName = (language: string) => {
+    // Проверяем, что язык существует в нашем списке
+    if (languages.includes(language as any)) {
+      return t(`languages.${language}`);
+    }
+    return language; // Возвращаем оригинальное значение, если перевод не найден
   };
 
   useEffect(() => {
@@ -299,9 +319,16 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
           <div className="absolute -inset-1 rounded-full bg-[conic-gradient(var(--ring),transparent_60%)] blur-sm opacity-70 animate-[spin_8s_linear_infinite]"></div>
           <div className="relative w-full h-full ring-4 ring-white/20 transition-all duration-300 hover:ring-white/40 rounded-full overflow-hidden">
             <img
-              src="/placeholder.svg?height=128&width=128"
+              src={
+                mainPhoto
+                  ? `/uploads/${mainPhoto.url}`
+                  : "/placeholder.svg?height=128&width=128"
+              }
               alt="Profile"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg?height=128&width=128";
+              }}
             />
           </div>
         </div>
@@ -354,7 +381,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                 className="bg-white/20 text-foreground border border-white/30 hover:bg-white/30 btn-bounce px-3 py-1 rounded-full text-sm"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                {interest}
+                {getInterestName(interest)}
               </span>
             ))
           ) : (
@@ -378,7 +405,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                 className="bg-white/20 text-foreground border border-white/30 hover:bg-white/30 btn-bounce px-3 py-1 rounded-full text-sm"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                {language}
+                {getLanguageName(language)}
               </span>
             ))
           ) : (
@@ -668,32 +695,38 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
 
       {/* Photos */}
       <div className="p-6 shadow-md animate-fadeInUp rounded-xl component-bg border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-bold text-lg text-foreground gradient-text">
-            {t("profile.photos")}
-          </h4>
+        <h4 className="font-bold text-lg text-foreground gradient-text mb-4">
+          {t("profile.photos")}
+        </h4>
+        {userPhotos.length > 0 ? (
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {userPhotos.map((photo, index: number) => (
+              <div
+                key={photo.id}
+                className="aspect-square rounded-xl overflow-hidden card-hover"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <img
+                  src={`/uploads/${photo.url}` || "/placeholder.svg"}
+                  alt={`Photo ${index + 1}`}
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
+                  onClick={() => setLightboxIndex(index)}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 mb-4">
+            <p className="text-foreground/50 italic">{t("profile.noPhotos")}</p>
+          </div>
+        )}
+        <div className="text-center">
           <button
             onClick={() => setShowPhotoUpload(true)}
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-medium transition-all duration-200"
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-medium transition-all duration-200"
           >
-            {t("profile.addPhotos")}
+            {t("profile.editPhotos")}
           </button>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {userPhotos.map((photo: string, index: number) => (
-            <div
-              key={index}
-              className="aspect-square rounded-xl overflow-hidden card-hover"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <img
-                src={photo || "/placeholder.svg"}
-                alt={`Photo ${index + 1}`}
-                className="w-full h-full object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
-                onClick={() => setLightboxIndex(index)}
-              />
-            </div>
-          ))}
         </div>
       </div>
 
@@ -775,7 +808,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={userPhotos[lightboxIndex]}
+              src={userPhotos[lightboxIndex]?.url || "/placeholder.svg"}
               alt="preview"
               className="w-full h-full object-contain"
             />
@@ -787,10 +820,10 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
       {showPhotoUpload && (
         <PhotoUploadForm
           onClose={() => setShowPhotoUpload(false)}
-          onSave={(photos) => {
-            console.log("Saved photos:", photos);
+          onSave={async () => {
             setShowPhotoUpload(false);
-            // Здесь можно добавить логику сохранения фотографий в профиль
+            // Обновляем данные пользователя после сохранения фотографий
+            await refreshUserData();
           }}
         />
       )}

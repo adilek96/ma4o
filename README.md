@@ -1,69 +1,90 @@
-# React + TypeScript + Vite
+# Важное!!!
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+в дев режиме закоментировать строку с телеграм скриптом в index.html
 
-Currently, two official plugins are available:
+  <!-- <script src="https://telegram.org/js/telegram-web-app.js"></script> -->
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+при пуше в проду не забыть откоментировать!
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+vite.config.ts стоит проксирование для пути /upload на наш минио с фотографиями
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Переменное окружение
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+VITE_APPLICATION="dev" || "production"
+VITE_INIT_DATA_DEV="" || берем из продакшин сборки в самом телеграм , может устаревать!
+VITE_BASE_API_URL_PROD="" ссылка на апи в проде
+VITE_BASE_API_URL_DEV="http://localhost:3002" ссылка на апи в дев режиме
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## На будущее
+
+обязатаельно сделать обьщий лоадер, 404 страницу, еррор баундрю
+
+## Константы
+
+### Интересы и языки
+
+В проекте используются константы для интересов и языков, которые можно переиспользовать в разных компонентах.
+
+#### Импорт констант:
+
+```typescript
+import { interests, languages } from "../constants";
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+#### Использование в компонентах:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Для интересов:**
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```typescript
+// Получение переведенного названия интереса
+const getInterestName = (interest: string) => {
+  if (interests.includes(interest as any)) {
+    return t(`interests.${interest}`);
+  }
+  return interest;
+};
+
+// Отображение интересов пользователя
+{
+  userInterests.map((interest: string) => (
+    <span key={interest}>{getInterestName(interest)}</span>
+  ));
+}
+```
+
+**Для языков:**
+
+```typescript
+// Получение переведенного названия языка
+const getLanguageName = (language: string) => {
+  if (languages.includes(language as any)) {
+    return t(`languages.${language}`);
+  }
+  return language;
+};
+
+// Отображение языков пользователя
+{
+  userLanguages.map((language: string) => (
+    <span key={language}>{getLanguageName(language)}</span>
+  ));
+}
+```
+
+#### Доступные значения:
+
+**Интересы:** `sports`, `music`, `movies`, `books`, `travel`, `cooking`, `art`, `technology`, `nature`, `photography`, `dancing`, `yoga`, `gaming`, `fashion`, `cars`, `animals`
+
+**Языки:** `ru`, `en`, `es`, `fr`, `de`, `it`, `zh`, `ja`, `ko`, `ar`, `pt`, `tr`, `pl`, `cs`, `hu`, `fi`, `sv`, `no`, `da`, `nl`
+
+#### Типы TypeScript:
+
+```typescript
+import { Interest, Language } from "../constants";
+
+// Типизированные переменные
+const userInterest: Interest = "sports";
+const userLanguage: Language = "ru";
 ```
