@@ -91,12 +91,31 @@ export default function PhotoUploadForm({
 
       if (validFiles.length === 0) return;
 
-      // Создаем временные фото для каждого файла
-      const tempPhotos: Photo[] = validFiles.map((file, index) => ({
-        id: `temp-${Date.now()}-${index}`,
-        url: URL.createObjectURL(file),
-        isUploading: true,
-      }));
+      // Создаем временные фото для каждого файла с base64
+      const tempPhotos: Photo[] = [];
+      const promises = validFiles.map((file, i) => {
+        return new Promise<void>((resolve) => {
+          const reader = new FileReader();
+          const tempPhoto: Photo = {
+            id: `temp-${Date.now()}-${i}`,
+            url: "",
+            isUploading: true,
+          };
+
+          tempPhotos.push(tempPhoto);
+
+          reader.onload = (e) => {
+            if (e.target?.result) {
+              tempPhoto.url = e.target.result as string;
+            }
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      // Ждем загрузки всех изображений
+      await Promise.all(promises);
 
       setPhotos((prev) => [...prev, ...tempPhotos]);
       setUploadingCount((prev) => prev + validFiles.length);
@@ -367,19 +386,9 @@ export default function PhotoUploadForm({
                       }`}
                     >
                       <img
-                        src={
-                          photo.url.startsWith("http")
-                            ? photo.url
-                            : `/uploads/${photo.url}`
-                        }
+                        src={`/uploads/${photo.url}`}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          console.error(
-                            `Ошибка загрузки изображения: ${photo.url}`
-                          );
-                          e.currentTarget.src = "/placeholder.svg";
-                        }}
                       />
 
                       {photo.isUploading && (

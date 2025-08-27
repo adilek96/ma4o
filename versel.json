@@ -1,0 +1,9 @@
+{
+    "rewrites": [
+      {
+        "source": "/uploads/(.*)",
+        "destination": "http://194.163.151.112:9015/$1"
+      }
+    ]
+  }
+  

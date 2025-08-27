@@ -51,6 +51,10 @@ export async function uploadFileAction(files: File | File[]): Promise<MultipleUp
         if (url.startsWith('/')) {
           url = `${baseUrl}${url}`;
         }
+        // Убеждаемся, что URL полный
+        if (!url.startsWith('http')) {
+          url = `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+        }
         return {
           id: photo.id,
           url: url
