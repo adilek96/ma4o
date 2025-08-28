@@ -256,6 +256,16 @@ export const ru = {
     "datingGoalPreference": "Цель знакомства",
     "smokingPreference": "Отношение к курению",
     "drinkingPreference": "Отношение к алкоголю",
+    "smokingPreferenceOptions": {
+      "ACCEPTABLE": "Приемлю",
+      "UNACCEPTABLE": "Неприемлю",
+      "NEUTRAL": "Без разницы"
+    },
+    "drinkingPreferenceOptions": {
+      "ACCEPTABLE": "Приемлю",
+      "UNACCEPTABLE": "Неприемлю",
+      "NEUTRAL": "Без разницы"
+    },
     "save": "Сохранить предпочтения",
     "update": "Обновить предпочтения",
     "saving": "Сохранение...",

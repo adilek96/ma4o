@@ -1,9 +1,23 @@
 // Экшены для работы с предпочтениями пользователя
 import type { PreferencesData } from '../types/profile';
-import { DATING_GOALS, SMOKING_OPTIONS, DRINKING_OPTIONS, PREFERRED_LOCATION_OPTIONS } from '../types/profile';
+import { 
+  DATING_GOALS, 
+  SMOKING_OPTIONS, 
+  DRINKING_OPTIONS, 
+  PREFERRED_LOCATION_OPTIONS,
+  SMOKING_PREFERENCE_OPTIONS,
+  DRINKING_PREFERENCE_OPTIONS
+} from '../types/profile';
 
 export type { PreferencesData };
-export { DATING_GOALS, SMOKING_OPTIONS, DRINKING_OPTIONS, PREFERRED_LOCATION_OPTIONS };
+export { 
+  DATING_GOALS, 
+  SMOKING_OPTIONS, 
+  DRINKING_OPTIONS, 
+  PREFERRED_LOCATION_OPTIONS,
+  SMOKING_PREFERENCE_OPTIONS,
+  DRINKING_PREFERENCE_OPTIONS
+};
 
 // Экшен для создания предпочтений
 export async function createPreferencesAction(preferencesData: PreferencesData): Promise<{ success: boolean; error?: string; preferencesId?: string }> {

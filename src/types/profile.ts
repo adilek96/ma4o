@@ -20,6 +20,10 @@ export const PREFERRED_LOCATION_OPTIONS: { value: PreferredLocation; label: stri
 export type SmokingStatus = "NEVER" | "OCCASIONALLY" | "REGULARLY" | "QUIT" | "PREFER_NOT_TO_SAY";
 export type DrinkingStatus = "NEVER" | "OCCASIONALLY" | "REGULARLY" | "QUIT" | "PREFER_NOT_TO_SAY";
 
+// Новые типы для предпочтений
+export type SmokingPreference = "ACCEPTABLE" | "UNACCEPTABLE" | "NEUTRAL";
+export type DrinkingPreference = "ACCEPTABLE" | "UNACCEPTABLE" | "NEUTRAL";
+
 export const SMOKING_OPTIONS: { value: SmokingStatus; label: string }[] = [
   { value: "NEVER", label: "Никогда не курил(а)" },
   { value: "OCCASIONALLY", label: "Курю иногда" },
@@ -34,6 +38,19 @@ export const DRINKING_OPTIONS: { value: DrinkingStatus; label: string }[] = [
   { value: "REGULARLY", label: "Пью регулярно" },
   { value: "QUIT", label: "Бросил(а) пить" },
   { value: "PREFER_NOT_TO_SAY", label: "Предпочитаю не говорить" }
+];
+
+// Новые опции для предпочтений
+export const SMOKING_PREFERENCE_OPTIONS: { value: SmokingPreference; label: string }[] = [
+  { value: "ACCEPTABLE", label: "ACCEPTABLE" },
+  { value: "UNACCEPTABLE", label: "UNACCEPTABLE" },
+  { value: "NEUTRAL", label: "NEUTRAL" }
+];
+
+export const DRINKING_PREFERENCE_OPTIONS: { value: DrinkingPreference; label: string }[] = [
+  { value: "ACCEPTABLE", label: "ACCEPTABLE" },
+  { value: "UNACCEPTABLE", label: "UNACCEPTABLE" },
+  { value: "NEUTRAL", label: "NEUTRAL" }
 ];
 
 export type Education = "HIGH_SCHOOL" | "COLLEGE" | "BACHELOR" | "MASTER" | "PHD" | "SELF_TAUGHT" | "OTHER";
@@ -91,8 +108,8 @@ export interface PreferencesData {
   locationPreference: PreferredLocation | "";
   maxDistance: number;
   datingGoalPreference: DatingGoal[];
-  smokingPreference?: SmokingStatus;
-  drinkingPreference?: DrinkingStatus;
+  smokingPreference?: SmokingPreference;
+  drinkingPreference?: DrinkingPreference;
 }
 
 export interface OptimisticProfileData extends ProfileData {

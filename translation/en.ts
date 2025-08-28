@@ -257,6 +257,16 @@ export const en = {
     "datingGoalPreference": "Dating goal",
     "smokingPreference": "Smoking preference",
     "drinkingPreference": "Drinking preference",
+    "smokingPreferenceOptions": {
+      "ACCEPTABLE": "Acceptable",
+      "UNACCEPTABLE": "Unacceptable",
+      "NEUTRAL": "Neutral"
+    },
+    "drinkingPreferenceOptions": {
+      "ACCEPTABLE": "Acceptable",
+      "UNACCEPTABLE": "Unacceptable",
+      "NEUTRAL": "Neutral"
+    },
     "save": "Save preferences",
     "update": "Update preferences",
     "saving": "Saving...",

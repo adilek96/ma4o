@@ -5,8 +5,8 @@ import {
   updatePreferencesAction,
   type PreferencesData,
   DATING_GOALS,
-  SMOKING_OPTIONS,
-  DRINKING_OPTIONS,
+  SMOKING_PREFERENCE_OPTIONS,
+  DRINKING_PREFERENCE_OPTIONS,
   PREFERRED_LOCATION_OPTIONS,
 } from "../actions/preferencesActions";
 
@@ -37,6 +37,9 @@ export default function PreferencesSetupForm({
     smokingPreference: undefined,
     drinkingPreference: undefined,
   });
+  // Отдельные состояния для отображения полей возраста
+  const [minAgeDisplay, setMinAgeDisplay] = useState<string>("18");
+  const [maxAgeDisplay, setMaxAgeDisplay] = useState<string>("35");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { t } = useTranslation();
 
@@ -54,6 +57,9 @@ export default function PreferencesSetupForm({
         smokingPreference: initialData.smokingPreference,
         drinkingPreference: initialData.drinkingPreference,
       });
+      // Обновляем отображаемые значения
+      setMinAgeDisplay(String(initialData.minAge || 18));
+      setMaxAgeDisplay(String(initialData.maxAge || 35));
     }
   }, [isEditMode, initialData, userId]);
 
@@ -272,16 +278,26 @@ export default function PreferencesSetupForm({
                 <input
                   type="number"
                   name="minAge"
-                  value={formData.minAge}
+                  value={minAgeDisplay}
                   onChange={(e) => {
                     const value = e.target.value;
+                    setMinAgeDisplay(value);
+
                     if (value === "") {
+                      // Оставляем поле пустым для отображения, но устанавливаем значение по умолчанию в formData
                       handleInputChange("minAge", 18);
                     } else {
                       const numValue = parseInt(value);
                       if (!isNaN(numValue)) {
                         handleInputChange("minAge", numValue);
                       }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // При потере фокуса устанавливаем минимальное значение если поле пустое
+                    if (e.target.value === "") {
+                      setMinAgeDisplay("18");
+                      handleInputChange("minAge", 18);
                     }
                   }}
                   min="18"
@@ -305,16 +321,26 @@ export default function PreferencesSetupForm({
                 <input
                   type="number"
                   name="maxAge"
-                  value={formData.maxAge}
+                  value={maxAgeDisplay}
                   onChange={(e) => {
                     const value = e.target.value;
+                    setMaxAgeDisplay(value);
+
                     if (value === "") {
+                      // Оставляем поле пустым для отображения, но устанавливаем значение по умолчанию в formData
                       handleInputChange("maxAge", 35);
                     } else {
                       const numValue = parseInt(value);
                       if (!isNaN(numValue)) {
                         handleInputChange("maxAge", numValue);
                       }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // При потере фокуса устанавливаем минимальное значение если поле пустое
+                    if (e.target.value === "") {
+                      setMaxAgeDisplay("35");
+                      handleInputChange("maxAge", 35);
                     }
                   }}
                   min="18"
@@ -446,7 +472,7 @@ export default function PreferencesSetupForm({
               {t("preferences.smokingPreference")}
             </label>
             <div className="space-y-3">
-              {SMOKING_OPTIONS.map((option) => (
+              {SMOKING_PREFERENCE_OPTIONS.map((option) => (
                 <label
                   key={option.value}
                   className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
@@ -461,7 +487,9 @@ export default function PreferencesSetupForm({
                     }
                     className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
                   />
-                  <span className="text-foreground">{option.label}</span>
+                  <span className="text-foreground">
+                    {t(`preferences.smokingPreferenceOptions.${option.value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -473,7 +501,7 @@ export default function PreferencesSetupForm({
               {t("preferences.drinkingPreference")}
             </label>
             <div className="space-y-3">
-              {DRINKING_OPTIONS.map((option) => (
+              {DRINKING_PREFERENCE_OPTIONS.map((option) => (
                 <label
                   key={option.value}
                   className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
@@ -488,7 +516,9 @@ export default function PreferencesSetupForm({
                     }
                     className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
                   />
-                  <span className="text-foreground">{option.label}</span>
+                  <span className="text-foreground">
+                    {t(`preferences.drinkingPreferenceOptions.${option.value}`)}
+                  </span>
                 </label>
               ))}
             </div>

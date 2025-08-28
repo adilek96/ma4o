@@ -546,25 +546,9 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             </span>
             <p className="text-foreground font-medium">
               {preferences?.smokingPreference
-                ? lang === "ru"
-                  ? preferences.smokingPreference === "NEVER"
-                    ? "Не курящие"
-                    : preferences.smokingPreference === "OCCASIONALLY"
-                    ? "Курящие иногда"
-                    : preferences.smokingPreference === "REGULARLY"
-                    ? "Курящие регулярно"
-                    : preferences.smokingPreference === "QUIT"
-                    ? "Бросившие курить"
-                    : "Без разницы"
-                  : preferences.smokingPreference === "NEVER"
-                  ? "Non-smokers"
-                  : preferences.smokingPreference === "OCCASIONALLY"
-                  ? "Occasional smokers"
-                  : preferences.smokingPreference === "REGULARLY"
-                  ? "Regular smokers"
-                  : preferences.smokingPreference === "QUIT"
-                  ? "Quit smoking"
-                  : "No preference"
+                ? t(
+                    `preferences.smokingPreferenceOptions.${preferences.smokingPreference}`
+                  )
                 : t("profile.notSpecified")}
             </p>
           </div>
@@ -574,25 +558,9 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             </span>
             <p className="text-foreground font-medium">
               {preferences?.drinkingPreference
-                ? lang === "ru"
-                  ? preferences.drinkingPreference === "NEVER"
-                    ? "Не пьющие"
-                    : preferences.drinkingPreference === "OCCASIONALLY"
-                    ? "Пьющие иногда"
-                    : preferences.drinkingPreference === "REGULARLY"
-                    ? "Пьющие регулярно"
-                    : preferences.drinkingPreference === "QUIT"
-                    ? "Бросившие пить"
-                    : "Без разницы"
-                  : preferences.drinkingPreference === "NEVER"
-                  ? "Non-drinkers"
-                  : preferences.drinkingPreference === "OCCASIONALLY"
-                  ? "Occasional drinkers"
-                  : preferences.drinkingPreference === "REGULARLY"
-                  ? "Regular drinkers"
-                  : preferences.drinkingPreference === "QUIT"
-                  ? "Quit drinking"
-                  : "No preference"
+                ? t(
+                    `preferences.drinkingPreferenceOptions.${preferences.drinkingPreference}`
+                  )
                 : t("profile.notSpecified")}
             </p>
           </div>
