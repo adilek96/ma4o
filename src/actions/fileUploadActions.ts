@@ -29,8 +29,6 @@ export async function uploadFileAction(files: File | File[]): Promise<MultipleUp
       formData.append(`files[${index}]`, file);
     });
 
-
-
     const response = await fetch(`${baseUrl}/api/v1/user/photo/upload`, {
       method: "POST",
       credentials: 'include',
@@ -41,7 +39,7 @@ export async function uploadFileAction(files: File | File[]): Promise<MultipleUp
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-        const data = await response.json();
+    const data = await response.json();
 
     // Обрабатываем ответ сервера
     if (data.message === 'success' && data.photos) {
@@ -91,13 +89,10 @@ export async function deletePhotoAction(fileId: string): Promise<UploadResponse>
     const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
     const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
 
-   
-
     const response = await fetch(`${baseUrl}/api/v1/user/photo/delete/${fileId}`, {
       method: "DELETE",
       credentials: 'include',
     });
-    
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -105,10 +100,8 @@ export async function deletePhotoAction(fileId: string): Promise<UploadResponse>
 
     return {
       success: true,
-      
     }
     
-   
   } catch (error) {
     console.error("Ошибка удаления файла:", error);
     return {
@@ -118,15 +111,12 @@ export async function deletePhotoAction(fileId: string): Promise<UploadResponse>
   }
 }         
 
-
 export async function updatePhotoAction(photoId: string): Promise<UploadResponse> {
-try {
-  const aplication = import.meta.env.VITE_APPLICATION;
+  try {
+    const aplication = import.meta.env.VITE_APPLICATION;
     const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
     const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
     const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
-
-   
 
     const response = await fetch(`${baseUrl}/api/v1/user/photo/update`, {
       method: "PATCH",
@@ -148,14 +138,13 @@ try {
 
     return {
       success: true,
-      
     }
-    
 
-} catch (error) {
-  console.error("Ошибка обновления фотографии:", error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : "Неизвестная ошибка"
-  };
-}}
+  } catch (error) {
+    console.error("Ошибка обновления фотографии:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Неизвестная ошибка"
+    };
+  }
+}

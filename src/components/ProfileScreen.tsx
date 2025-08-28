@@ -66,6 +66,11 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
     []
   );
 
+  // Отслеживаем изменения в фотографиях пользователя
+  useEffect(() => {
+    console.log("ProfileScreen: обновлены фотографии пользователя", userPhotos);
+  }, [userPhotos]);
+
   // Загружаем список стран
   useEffect(() => {
     const fetchCountries = async () => {
@@ -814,9 +819,9 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
         <PhotoUploadForm
           onClose={() => setShowPhotoUpload(false)}
           onSave={async () => {
-            setShowPhotoUpload(false);
             // Обновляем данные пользователя после сохранения фотографий
             await refreshUserData();
+            setShowPhotoUpload(false);
           }}
         />
       )}

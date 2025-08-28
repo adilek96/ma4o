@@ -208,6 +208,8 @@ export default function PhotoUploadForm({
         if (result.success) {
           // Удаляем фото из состояния
           setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
+          // Обновляем данные пользователя после удаления
+          await refreshUserData();
         } else {
           alert(result.error || t("photoUpload.deleteError"));
         }
@@ -215,7 +217,7 @@ export default function PhotoUploadForm({
         alert(t("photoUpload.deleteError"));
       }
     },
-    [t]
+    [t, refreshUserData]
   );
 
   const handlePhotoClick = useCallback((photoId: string, isMain: boolean) => {
@@ -230,8 +232,6 @@ export default function PhotoUploadForm({
     try {
       const result = await updatePhotoAction(selectedPhotoId);
       if (result.success) {
-        // Небольшая задержка для обработки на сервере
-        await new Promise((resolve) => setTimeout(resolve, 300));
         // Обновляем данные пользователя с сервера
         await refreshUserData();
       } else {
@@ -254,6 +254,8 @@ export default function PhotoUploadForm({
     onSave(photos.filter((photo) => !photo.isUploading));
     // Обновляем данные пользователя после сохранения
     await refreshUserData();
+    // Закрываем форму после обновления данных
+    onClose();
   };
 
   const canProceed = photos.length > 0 && uploadingCount === 0;

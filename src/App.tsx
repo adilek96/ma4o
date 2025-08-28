@@ -36,10 +36,14 @@ function App() {
     isLoading: telegramLoading,
   } = useTelegram();
 
-  // Инициализация Telegram SDK
+  // Инициализация Telegram SDK только в продакшене
   useEffect(() => {
     if (isTelegram && import.meta.env.VITE_APPLICATION === "production") {
-      init();
+      try {
+        init();
+      } catch (error) {
+        console.log("Ошибка инициализации Telegram SDK:", error);
+      }
     }
   }, [isTelegram]);
 
@@ -230,6 +234,23 @@ function App() {
           </p>
           <p className="text-sm text-gray-500">
             Пожалуйста, убедитесь, что вы открыли приложение через Telegram.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // В режиме разработки показываем приложение даже без пользователя
+  if (!user && !loading && import.meta.env.VITE_APPLICATION !== "production") {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-4">Режим разработки</h2>
+          <p className="text-gray-600 mb-4">
+            Приложение запущено в режиме разработки.
+          </p>
+          <p className="text-sm text-gray-500">
+            Для полной функциональности откройте приложение через Telegram.
           </p>
         </div>
       </div>

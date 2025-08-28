@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useRawInitData } from "@telegram-apps/sdk-react";
 
 type User = {
   id: string
@@ -69,40 +68,20 @@ export function useAuth() {
   const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
   const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
 
-  // Получаем данные Telegram только в продакшене
-  const rawInitData = useRawInitData();
-  
   // Определяем initData на основе окружения
-  const updateInitData = () => {
+  useEffect(() => {
     if (aplication === "production") {
-      // В продакшене используем только реальные данные Telegram
+      // В продакшене берем initData из Telegram WebApp
       if (window.Telegram?.WebApp?.initData) {
         setInitData(window.Telegram.WebApp.initData);
-        return;
+      } else {
+        setInitData(null);
       }
-      if (rawInitData) {
-        setInitData(rawInitData as string);
-        return;
-      }
-      // Если нет данных Telegram, возвращаем null
-      setInitData(null);
     } else {
-      // В разработке используем dev данные
-      setInitData(initDataDev);
+      // В режиме разработки берем initData из переменной окружения
+      setInitData(initDataDev || null);
     }
-  };
-
-  // Обновляем initData при изменении rawInitData или window.Telegram
-  useEffect(() => {
-    updateInitData();
-    
-    // Добавляем небольшую задержку для инициализации Telegram WebApp
-    const timer = setTimeout(() => {
-      updateInitData();
-    }, 200);
-    
-    return () => clearTimeout(timer);
-  }, [rawInitData, aplication]);
+  }, [aplication, initDataDev]);
 
   const checkAuth = async () => {
     try {
@@ -122,6 +101,25 @@ export function useAuth() {
         }
       }
     } catch (error) {
+      // В режиме разработки создаем мокового пользователя, если API недоступен
+      if (aplication !== "production") {
+        console.log("API недоступен в режиме разработки, создаем мокового пользователя");
+        const mockUser: User = {
+          id: "dev-user-id",
+          telegramId: 123456789,
+          username: "test_user",
+          firstName: "Тестовый",
+          lastName: "Пользователь",
+          email: null,
+          isNew: true, // Новый пользователь для показа форм настройки
+          isPreferences: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setUser(mockUser);
+        setLoading(false);
+        return;
+      }
       await refresh()
     }
   }
@@ -140,6 +138,25 @@ export function useAuth() {
         await auth()
       }
     } catch (error) {
+      // В режиме разработки создаем мокового пользователя, если API недоступен
+      if (aplication !== "production") {
+        console.log("API недоступен в режиме разработки, создаем мокового пользователя");
+        const mockUser: User = {
+          id: "dev-user-id",
+          telegramId: 123456789,
+          username: "test_user",
+          firstName: "Тестовый",
+          lastName: "Пользователь",
+          email: null,
+          isNew: true,
+          isPreferences: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setUser(mockUser);
+        setLoading(false);
+        return;
+      }
       await auth()
     }
   }
@@ -148,6 +165,25 @@ export function useAuth() {
     try {
       // Проверяем, есть ли данные для аутентификации
       if (!initData) {
+        // В режиме разработки создаем мокового пользователя, если нет initData
+        if (aplication !== "production") {
+          console.log("Нет initData в режиме разработки, создаем мокового пользователя");
+          const mockUser: User = {
+            id: "dev-user-id",
+            telegramId: 123456789,
+            username: "test_user",
+            firstName: "Тестовый",
+            lastName: "Пользователь",
+            email: null,
+            isNew: true,
+            isPreferences: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          setUser(mockUser);
+          setLoading(false);
+          return;
+        }
         setLoading(false)
         return
       }
@@ -169,15 +205,42 @@ export function useAuth() {
         setLoading(false)
       }
     } catch (error) {
+      // В режиме разработки создаем мокового пользователя, если API недоступен
+      if (aplication !== "production") {
+        console.log("API недоступен в режиме разработки, создаем мокового пользователя");
+        const mockUser: User = {
+          id: "dev-user-id",
+          telegramId: 123456789,
+          username: "test_user",
+          firstName: "Тестовый",
+          lastName: "Пользователь",
+          email: null,
+          isNew: true,
+          isPreferences: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setUser(mockUser);
+        setLoading(false);
+        return;
+      }
       setLoading(false)
     }
   }
 
   const refreshUserData = async () => {
     try {
+      // В режиме разработки делаем реальный API запрос
+      if (aplication !== "production") {
+        console.log("Режим разработки: обновляем данные пользователя через API");
+        await checkAuth();
+        return;
+      }
+      
       await checkAuth()
     } catch (error) {
       // Ошибка обновления данных пользователя
+      console.error("Ошибка при обновлении данных пользователя:", error);
     }
   }
 

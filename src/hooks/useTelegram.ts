@@ -19,6 +19,17 @@ interface UseTelegramReturn {
   isLoading: boolean;
 }
 
+// Моковые данные для режима разработки
+const mockUser: TelegramUser = {
+  id: 123456789,
+  first_name: "Тестовый",
+  last_name: "Пользователь",
+  username: "test_user",
+  language_code: "ru",
+  is_premium: false,
+  photo_url: undefined,
+};
+
 export function useTelegram(): UseTelegramReturn {
   const [isTelegram, setIsTelegram] = useState(false);
   const [user, setUser] = useState<TelegramUser | null>(null);
@@ -35,54 +46,40 @@ export function useTelegram(): UseTelegramReturn {
         if (isInTelegram) {
           setIsTelegram(true);
           
-          // Функция для получения данных Telegram с повторными попытками
-          const getTelegramData = () => {
-            const tg = (window as any)?.Telegram?.WebApp;
+          const tg = (window as any)?.Telegram?.WebApp;
+          
+          if (tg?.initData) {
+            setInitData(tg.initData);
             
-            if (tg?.initData) {
-              setInitData(tg.initData);
+            // Парсим данные пользователя
+            try {
+              const urlParams = new URLSearchParams(tg.initData);
+              const userParam = urlParams.get("user");
               
-              // Парсим данные пользователя
-              try {
-                const urlParams = new URLSearchParams(tg.initData);
-                const userParam = urlParams.get("user");
+              if (userParam) {
+                const userData: TelegramUser = JSON.parse(userParam);
+                setUser(userData);
                 
-                if (userParam) {
-                  const userData: TelegramUser = JSON.parse(userParam);
-                  setUser(userData);
-                  
-                  // Устанавливаем язык пользователя
-                  if (userData.language_code) {
-                    if (userData.language_code === "ru" || userData.language_code === "en") {
-                      changeLanguage(userData.language_code);
-                    } else {
-                      changeLanguage("en");
-                    }
+                // Устанавливаем язык пользователя
+                if (userData.language_code) {
+                  if (userData.language_code === "ru" || userData.language_code === "en") {
+                    changeLanguage(userData.language_code);
+                  } else {
+                    changeLanguage("en");
                   }
                 }
-              } catch (error) {
-                console.error("Ошибка при парсинге данных пользователя:", error);
               }
+            } catch (error) {
+              console.error("Ошибка при парсинге данных пользователя:", error);
             }
-            
-            // Получаем тему
-            if (tg?.colorScheme) {
-              setTheme(tg.colorScheme);
-            }
-          };
+          }
           
-          // Первая попытка
-          getTelegramData();
-          
-          // Если данные еще не загружены, пробуем еще раз через небольшую задержку
-          if (!initData) {
-            setTimeout(() => {
-              getTelegramData();
-            }, 200);
+          // Получаем тему
+          if (tg?.colorScheme) {
+            setTheme(tg.colorScheme);
           }
           
           // Подписываемся на изменения темы
-          const tg = (window as any)?.Telegram?.WebApp;
           if (tg?.onEvent) {
             const themeHandler = () => {
               if (tg.colorScheme) {
@@ -92,30 +89,26 @@ export function useTelegram(): UseTelegramReturn {
             
             tg.onEvent("themeChanged", themeHandler);
             
-            // Также слушаем изменения через другие события
-            const viewportHandler = () => {
-              setTimeout(() => {
-                if (tg.colorScheme) {
-                  setTheme(tg.colorScheme);
-                }
-              }, 100);
-            };
-            
-            tg.onEvent("viewportChanged", viewportHandler);
-            
             // Очистка при размонтировании
             return () => {
               if (tg.offEvent) {
                 tg.offEvent("themeChanged", themeHandler);
-                tg.offEvent("viewportChanged", viewportHandler);
               }
             };
           }
         } else {
-          // Не в Telegram WebApp
+          // Не в Telegram WebApp - режим разработки
+          console.log("Режим разработки: используем моковые данные");
+          setUser(mockUser);
+          setTheme("light"); // По умолчанию светлая тема в режиме разработки
+          changeLanguage("ru"); // По умолчанию русский язык
         }
       } catch (error) {
         console.error("Ошибка при инициализации Telegram:", error);
+        // В случае ошибки также используем моковые данные
+        setUser(mockUser);
+        setTheme("light");
+        changeLanguage("ru");
       } finally {
         setIsLoading(false);
       }
