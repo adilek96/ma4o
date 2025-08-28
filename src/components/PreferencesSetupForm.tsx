@@ -221,8 +221,8 @@ export default function PreferencesSetupForm({
             <label className="block text-sm font-medium mb-3 text-foreground">
               {t("preferences.genderPreference")} *
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {["male", "female", "any"].map((gender) => (
+            <div className="grid grid-cols-2 gap-3">
+              {["male", "female", "any", "other"].map((gender) => (
                 <button
                   key={gender}
                   type="button"
@@ -249,6 +249,9 @@ export default function PreferencesSetupForm({
                       )}
                       {gender === "any" && (
                         <span className="text-lg font-bold">⚧</span>
+                      )}
+                      {gender === "other" && (
+                        <span className="text-lg font-bold">⚪</span>
                       )}
                     </div>
                     <span className="text-sm capitalize">

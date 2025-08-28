@@ -127,6 +127,8 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
         return t("profile.seekingFemale");
       case "ANY":
         return t("profile.seekingAny");
+      case "OTHER":
+        return t("profile.seekingOther");
       default:
         return t("profile.notSpecified");
     }
@@ -591,21 +593,21 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                   ? profile.smoking === "NEVER"
                     ? "Никогда не курил(а)"
                     : profile.smoking === "OCCASIONALLY"
-                    ? "Курю иногда"
-                    : profile.smoking === "REGULARLY"
-                    ? "Курю регулярно"
-                    : profile.smoking === "QUIT"
-                    ? "Бросил(а) курить"
-                    : "Предпочитаю не говорить"
+                      ? "Курю иногда"
+                      : profile.smoking === "REGULARLY"
+                        ? "Курю регулярно"
+                        : profile.smoking === "QUIT"
+                          ? "Бросил(а) курить"
+                          : "Предпочитаю не говорить"
                   : profile.smoking === "NEVER"
-                  ? "Never smoked"
-                  : profile.smoking === "OCCASIONALLY"
-                  ? "Occasionally"
-                  : profile.smoking === "REGULARLY"
-                  ? "Regularly"
-                  : profile.smoking === "QUIT"
-                  ? "Quit"
-                  : "Prefer not to say"
+                    ? "Never smoked"
+                    : profile.smoking === "OCCASIONALLY"
+                      ? "Occasionally"
+                      : profile.smoking === "REGULARLY"
+                        ? "Regularly"
+                        : profile.smoking === "QUIT"
+                          ? "Quit"
+                          : "Prefer not to say"
                 : t("profile.noSmoking")}
             </p>
           </div>
@@ -619,21 +621,21 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
                   ? profile.drinking === "NEVER"
                     ? "Не пью алкоголь"
                     : profile.drinking === "OCCASIONALLY"
-                    ? "Пью иногда"
-                    : profile.drinking === "REGULARLY"
-                    ? "Пью регулярно"
-                    : profile.drinking === "QUIT"
-                    ? "Бросил(а) пить"
-                    : "Предпочитаю не говорить"
+                      ? "Пью иногда"
+                      : profile.drinking === "REGULARLY"
+                        ? "Пью регулярно"
+                        : profile.drinking === "QUIT"
+                          ? "Бросил(а) пить"
+                          : "Предпочитаю не говорить"
                   : profile.drinking === "NEVER"
-                  ? "Never drink"
-                  : profile.drinking === "OCCASIONALLY"
-                  ? "Occasionally"
-                  : profile.drinking === "REGULARLY"
-                  ? "Regularly"
-                  : profile.drinking === "QUIT"
-                  ? "Quit"
-                  : "Prefer not to say"
+                    ? "Never drink"
+                    : profile.drinking === "OCCASIONALLY"
+                      ? "Occasionally"
+                      : profile.drinking === "REGULARLY"
+                        ? "Regularly"
+                        : profile.drinking === "QUIT"
+                          ? "Quit"
+                          : "Prefer not to say"
                 : t("profile.noDrinking")}
             </p>
           </div>

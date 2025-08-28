@@ -216,6 +216,7 @@ export const en = {
         "seekingMale": "Men",
         "seekingFemale": "Women",
         "seekingAny": "Anyone",
+        "seekingOther": "Other",
         "educationTitle": "Education",
         "occupationTitle": "Occupation",
         "education": {
@@ -247,7 +248,8 @@ export const en = {
     "gender": {
       "male": "Men",
       "female": "Women",
-      "any": "Any"
+      "any": "Any",
+      "other": "Other"
     },
     "ageRange": "Age range",
     "minAge": "Minimum age",

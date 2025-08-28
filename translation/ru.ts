@@ -215,6 +215,7 @@ export const ru = {
       "seekingMale": "Мужчин",
       "seekingFemale": "Женщин",
       "seekingAny": "Без разницы",
+      "seekingOther": "Другой",
      "educationTitle": "Образование",
      "occupationTitle": "Род деятельности",
      "education": {
@@ -246,7 +247,8 @@ export const ru = {
     "gender": {
       "male": "Мужчин",
       "female": "Женщин",
-      "any": "Без разницы"
+      "any": "Без разницы",
+      "other": "Другой"
     },
     "ageRange": "Возрастной диапазон",
     "minAge": "Минимальный возраст",
