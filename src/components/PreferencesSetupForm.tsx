@@ -1,7 +1,8 @@
-import { useState, useOptimistic, useTransition } from "react";
+import { useState, useOptimistic, useTransition, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   createPreferencesAction,
+  updatePreferencesAction,
   type PreferencesData,
   DATING_GOALS,
   SMOKING_OPTIONS,
@@ -13,11 +14,17 @@ interface PreferencesSetupFormProps {
   onSubmit: (data: PreferencesData) => void;
   onCancel: () => void;
   userId: string;
+  // Новые пропсы для режима редактирования
+  isEditMode?: boolean;
+  initialData?: PreferencesData;
 }
 
 export default function PreferencesSetupForm({
   onSubmit,
+  onCancel,
   userId,
+  isEditMode = false,
+  initialData,
 }: PreferencesSetupFormProps) {
   const [formData, setFormData] = useState<PreferencesData>({
     userId: userId,
@@ -32,6 +39,23 @@ export default function PreferencesSetupForm({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { t } = useTranslation();
+
+  // Заполняем форму начальными данными при редактировании
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      setFormData({
+        userId: userId,
+        genderPreference: initialData.genderPreference || "",
+        minAge: initialData.minAge || 18,
+        maxAge: initialData.maxAge || 35,
+        locationPreference: initialData.locationPreference || "",
+        maxDistance: initialData.maxDistance || 50,
+        datingGoalPreference: initialData.datingGoalPreference || [],
+        smokingPreference: initialData.smokingPreference,
+        drinkingPreference: initialData.drinkingPreference,
+      });
+    }
+  }, [isEditMode, initialData, userId]);
 
   // Используем useOptimistic для оптимистичных обновлений
   const [, addOptimisticPreferences] = useOptimistic<
@@ -100,14 +124,28 @@ export default function PreferencesSetupForm({
       // Запускаем реальный запрос в транзиции
       startTransition(async () => {
         try {
-          const result = await createPreferencesAction(formData);
+          const result = isEditMode
+            ? await updatePreferencesAction(formData)
+            : await createPreferencesAction(formData);
+
           if (result.success) {
             onSubmit(formData);
           } else {
-            console.error("Ошибка создания предпочтений:", result.error);
+            console.error(
+              isEditMode
+                ? "Ошибка обновления предпочтений:"
+                : "Ошибка создания предпочтений:",
+              result.error
+            );
+            // Здесь можно добавить обработку ошибок
           }
         } catch (error) {
-          console.error("Неожиданная ошибка при создании предпочтений:", error);
+          console.error(
+            isEditMode
+              ? "Неожиданная ошибка при обновлении предпочтений:"
+              : "Неожиданная ошибка при создании предпочтений:",
+            error
+          );
         }
       });
     }
@@ -132,7 +170,7 @@ export default function PreferencesSetupForm({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => onSubmit(formData)}
+              onClick={onCancel}
               className="p-2 rounded-xl border border-border component-bg hover:border-primary/50 transition-all duration-200"
             >
               <svg
@@ -151,10 +189,14 @@ export default function PreferencesSetupForm({
             </button>
             <div>
               <h1 className="text-lg font-bold text-foreground">
-                {t("preferences.title")}
+                {isEditMode
+                  ? t("preferences.editTitle")
+                  : t("preferences.title")}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {t("preferences.subtitle")}
+                {isEditMode
+                  ? t("preferences.editSubtitle")
+                  : t("preferences.subtitle")}
               </p>
             </div>
           </div>
@@ -173,26 +215,41 @@ export default function PreferencesSetupForm({
             <label className="block text-sm font-medium mb-3 text-foreground">
               {t("preferences.genderPreference")} *
             </label>
-            <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
               {["male", "female", "any"].map((gender) => (
-                <label
+                <button
                   key={gender}
-                  className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+                  type="button"
+                  onClick={() => handleInputChange("genderPreference", gender)}
+                  className={`p-4 rounded-2xl border-2 transition-all duration-200 font-medium ${
+                    formData.genderPreference === gender
+                      ? "border-purple-500 component-bg bg-gradient-to-r from-purple-500/10 to-purple-600/10 neon-purple-soft text-purple-600 dark:text-purple-400"
+                      : "border-border component-bg hover:border-border/50 text-foreground"
+                  }`}
                 >
-                  <input
-                    type="radio"
-                    name="genderPreference"
-                    value={gender}
-                    checked={formData.genderPreference === gender}
-                    onChange={(e) =>
-                      handleInputChange("genderPreference", e.target.value)
-                    }
-                    className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
-                  />
-                  <span className="capitalize text-foreground">
-                    {t(`preferences.gender.${gender}`)}
-                  </span>
-                </label>
+                  <div className="flex flex-col items-center space-y-2">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        formData.genderPreference === gender
+                          ? "bg-purple-500 text-white"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {gender === "male" && (
+                        <span className="text-lg font-bold">♂</span>
+                      )}
+                      {gender === "female" && (
+                        <span className="text-lg font-bold">♀</span>
+                      )}
+                      {gender === "any" && (
+                        <span className="text-lg font-bold">⚧</span>
+                      )}
+                    </div>
+                    <span className="text-sm capitalize">
+                      {t(`preferences.gender.${gender}`)}
+                    </span>
+                  </div>
+                </button>
               ))}
             </div>
             {errors.genderPreference && (
@@ -347,36 +404,32 @@ export default function PreferencesSetupForm({
             <label className="block text-sm font-medium mb-3 text-foreground">
               {t("preferences.datingGoalPreference")} *
             </label>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               {DATING_GOALS.map((goal) => (
                 <label
                   key={goal.value}
-                  className="flex items-center p-3 rounded-2xl border-2 border-border component-bg hover:border-border/50 transition-all duration-200 cursor-pointer"
+                  className={`flex items-center p-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+                    formData.datingGoalPreference.includes(goal.value)
+                      ? "border-purple-500 component-bg bg-gradient-to-r from-purple-500/10 to-purple-600/10 neon-purple-soft"
+                      : "border-border component-bg hover:border-border/50"
+                  }`}
                 >
                   <input
-                    type="radio"
-                    name="datingGoalPreference"
-                    value={goal.value}
+                    type="checkbox"
                     checked={formData.datingGoalPreference.includes(goal.value)}
-                    onChange={(e) => {
+                    onChange={() => {
                       const value = goal.value;
-                      if (e.target.checked) {
-                        handleInputChange("datingGoalPreference", [
-                          ...formData.datingGoalPreference,
-                          value,
-                        ]);
-                      } else {
-                        handleInputChange(
-                          "datingGoalPreference",
-                          formData.datingGoalPreference.filter(
-                            (item) => item !== value
-                          )
-                        );
-                      }
+                      const updatedGoals =
+                        formData.datingGoalPreference.includes(value)
+                          ? formData.datingGoalPreference.filter(
+                              (item) => item !== value
+                            )
+                          : [...formData.datingGoalPreference, value];
+                      handleInputChange("datingGoalPreference", updatedGoals);
                     }}
                     className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-500/20"
                   />
-                  <span className="text-foreground">{goal.label}</span>
+                  <span className="text-sm text-foreground">{goal.label}</span>
                 </label>
               ))}
             </div>
@@ -446,20 +499,37 @@ export default function PreferencesSetupForm({
       {/* Фиксированная кнопка внизу */}
       <div className="flex-shrink-0 component-bg border-t border-border px-4 py-4">
         <div className="max-w-md mx-auto">
-          <button
-            onClick={handleSubmit}
-            disabled={isPending}
-            className="w-full px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isPending ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                <span>{t("preferences.saving")}</span>
-              </div>
-            ) : (
-              t("preferences.save")
+          <div className="flex gap-3">
+            {/* Показываем кнопку отмены только в режиме редактирования */}
+            {isEditMode && (
+              <button
+                onClick={onCancel}
+                className="flex-1 px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground hover:border-red-500/50 transition-all duration-200 font-medium"
+              >
+                {t("form.navigation.cancel")}
+              </button>
             )}
-          </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isPending}
+              className={`px-8 py-4 rounded-xl border-border border-2 shadow-md component-bg text-foreground neon-purple-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                isEditMode ? "flex-1" : "w-full"
+              }`}
+            >
+              {isPending ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                  <span>
+                    {isEditMode
+                      ? t("preferences.updating")
+                      : t("preferences.saving")}
+                  </span>
+                </div>
+              ) : (
+                t("form.navigation.save")
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

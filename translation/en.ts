@@ -203,6 +203,7 @@ export const en = {
        "openness": "Openness",
        "activity": "Activity",
        "editProfile": "Edit Profile",
+       "editPreferences": "Edit Parameters",
        "searchPreferences": "Search Preferences",
                "seekingGender": "Seeking:",
         "datingGoal": "Dating goal:",
@@ -239,6 +240,8 @@ export const en = {
   "preferences": {
     "title": "Preferences",
     "subtitle": "Configure search parameters",
+    "editTitle": "Edit Preferences",
+    "editSubtitle": "Change search parameters",
     "setupTitle": "Preferences Setup",
     "genderPreference": "Preferred gender",
     "gender": {
@@ -254,8 +257,10 @@ export const en = {
     "datingGoalPreference": "Dating goal",
     "smokingPreference": "Smoking preference",
     "drinkingPreference": "Drinking preference",
-         "save": "Save preferences",
-     "saving": "Saving..."
+    "save": "Save preferences",
+    "update": "Update preferences",
+    "saving": "Saving...",
+    "updating": "Updating..."
    },
    "photoUpload": {
      "title": "Photo Upload",

@@ -202,6 +202,7 @@ export const ru = {
      "openness": "Открытость",
      "activity": "Активность",
      "editProfile": "Редактировать профиль",
+     "editPreferences": "Изменить параметры",
      "searchPreferences": "Предпочтения поиска",
      "seekingGender": "Ищу:",
      "datingGoal": "Цель знакомства:",
@@ -238,6 +239,8 @@ export const ru = {
   "preferences": {
     "title": "Предпочтения",
     "subtitle": "Настройте параметры поиска",
+    "editTitle": "Редактирование предпочтений",
+    "editSubtitle": "Измените параметры поиска",
     "setupTitle": "Настройка предпочтений",
     "genderPreference": "Предпочитаемый пол",
     "gender": {
@@ -253,8 +256,10 @@ export const ru = {
     "datingGoalPreference": "Цель знакомства",
     "smokingPreference": "Отношение к курению",
     "drinkingPreference": "Отношение к алкоголю",
-         "save": "Сохранить предпочтения",
-     "saving": "Сохранение..."
+    "save": "Сохранить предпочтения",
+    "update": "Обновить предпочтения",
+    "saving": "Сохранение...",
+    "updating": "Обновление..."
    },
    "photoUpload": {
      "title": "Загрузка фотографий",

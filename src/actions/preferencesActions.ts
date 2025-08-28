@@ -44,6 +44,41 @@ export async function createPreferencesAction(preferencesData: PreferencesData):
   }
 }
 
+// Экшен для обновления предпочтений
+export async function updatePreferencesAction(preferencesData: PreferencesData): Promise<{ success: boolean; error?: string }> {
+  try {
+    const aplication = import.meta.env.VITE_APPLICATION;
+    const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
+    const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
+    const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
+
+    console.log("updatePreferencesData", preferencesData);
+
+    const response = await fetch(`${baseUrl}/api/v1/user/preferences/update`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(preferencesData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Ошибка при обновлении предпочтений');
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Ошибка при обновлении предпочтений:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Неизвестная ошибка',
+    };
+  }
+}
 
 
 // Экшен для получения предпочтений пользователя

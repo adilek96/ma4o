@@ -6,6 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ru } from "../../translation/ru";
 import { en } from "../../translation/en";
 import PhotoUploadForm from "./PhotoUploadForm";
+import PreferencesSetupForm from "./PreferencesSetupForm";
 import { interests, languages } from "../constants";
 
 export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
@@ -62,6 +63,7 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [locationUpdating, setLocationUpdating] = useState(false);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [showPreferencesSetup, setShowPreferencesSetup] = useState(false);
   const [countries, setCountries] = useState<{ code: string; name: string }[]>(
     []
   );
@@ -595,6 +597,14 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             </p>
           </div>
         </div>
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setShowPreferencesSetup(true)}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl text-sm font-medium transition-all duration-200"
+          >
+            {t("profile.editPreferences")}
+          </button>
+        </div>
       </div>
 
       {/* Smoking & Drinking */}
@@ -823,6 +833,35 @@ export default function ProfileScreen({ onEdit }: { onEdit: () => void }) {
             await refreshUserData();
             setShowPhotoUpload(false);
           }}
+        />
+      )}
+
+      {/* Preferences Setup Form */}
+      {showPreferencesSetup && preferences && (
+        <PreferencesSetupForm
+          userId={user.id}
+          isEditMode={true}
+          initialData={{
+            userId: preferences.userId,
+            genderPreference: preferences.genderPreference?.toLowerCase() || "",
+            minAge: preferences.minAge,
+            maxAge: preferences.maxAge,
+            locationPreference: preferences.locationPreference as any,
+            maxDistance: preferences.maxDistance,
+            datingGoalPreference: Array.isArray(
+              preferences.datingGoalPreference
+            )
+              ? (preferences.datingGoalPreference as any)
+              : [preferences.datingGoalPreference as any],
+            smokingPreference: preferences.smokingPreference as any,
+            drinkingPreference: preferences.drinkingPreference as any,
+          }}
+          onSubmit={async () => {
+            // Обновляем данные пользователя после сохранения предпочтений
+            await refreshUserData();
+            setShowPreferencesSetup(false);
+          }}
+          onCancel={() => setShowPreferencesSetup(false)}
         />
       )}
     </div>
