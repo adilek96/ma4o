@@ -260,6 +260,7 @@ export default function PhotoUploadForm({
   };
 
   const handelTgPhoto = () => {
+    console.log("handelTgPhoto");
     if (window.Telegram?.WebApp) {
       const tg: any = window.Telegram.WebApp;
 
@@ -332,9 +333,7 @@ export default function PhotoUploadForm({
           >
             {window.Telegram?.WebApp ? (
               <button
-                onClick={() => {
-                  handelTgPhoto();
-                }}
+                onClick={handelTgPhoto}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
             ) : (
