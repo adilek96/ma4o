@@ -259,7 +259,7 @@ export default function PhotoUploadForm({
     onClose();
   };
 
-  const handelTgPhoto = () => {
+  const handelTgPhoto = async () => {
     console.log("handelTgPhoto");
     if (window.Telegram?.WebApp) {
       const tg: any = window.Telegram.WebApp;
@@ -270,6 +270,11 @@ export default function PhotoUploadForm({
       // tg.onEvent("file_selected", (files: any[]) => {
       //   console.log("Выбранные файлы:", files);
       // });
+      const files = await tg.chooseFile({
+        multiple: false,
+        accept: ["image/*"],
+      });
+      console.log("Файл выбран:", files[0]);
     } else {
       alert("Please use Telegram WebApp to upload photos");
     }
