@@ -319,7 +319,7 @@ export default function PhotoUploadForm({
               type="file"
               multiple
               accept="image/*"
-              capture="user"
+              capture="environment"
               onChange={handleFileSelect}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
