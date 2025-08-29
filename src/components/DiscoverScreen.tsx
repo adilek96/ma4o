@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Stack from "./Stack";
 import { FaTimes, FaHeart } from "react-icons/fa";
-import { useSearch } from "@/hooks/useSearch";
+// import { useSearch } from "@/hooks/useSearch";
 
 const mockProfiles = [
   {
@@ -40,24 +40,24 @@ const DiscoverScreen = () => {
   useTranslation();
   const [seed] = useState(() => Math.random());
 
-  const { results, handleSearch, loading } = useSearch();
+  // const { results, handleSearch, loading } = useSearch();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      await handleSearch();
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await handleSearch();
+  //   };
+  //   fetchData();
+  // }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-  // if (results.length === 0) {
-  //   return <div>No results found</div>;
+  // if (loading) {
+  //   return <div>Loading...</div>;
   // }
-  if (results.length > 0) {
-    console.log("results", results);
-  }
+  // // if (results.length === 0) {
+  // //   return <div>No results found</div>;
+  // // }
+  // if (results.length > 0) {
+  //   console.log("results", results);
+  // }
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]   animate-fadeInUp">
