@@ -340,6 +340,7 @@ export default function PhotoUploadForm({
           >
             <input
               type="file"
+              multiple
               accept="image/jpeg, image/jpg, image/png, image/heic, image/heif"
               onChange={handleFileSelect}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
