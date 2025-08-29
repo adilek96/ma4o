@@ -19,9 +19,9 @@ const DiscoverScreen = () => {
     fetchData();
   }, []);
 
-  if (results.length > 0) {
-    console.log("results", results);
-  }
+  // if (results.length > 0) {
+  //   console.log("results", results);
+  // }
 
   if (loading) {
     return (
@@ -31,7 +31,7 @@ const DiscoverScreen = () => {
     );
   }
 
-  if (!results || results.length === 0) {
+  if (!results || results === null) {
     return (
       <div className="flex h-[100vh] w-full justify-center items-center text-center text-2xl font-bold">
         No results found
