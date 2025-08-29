@@ -270,7 +270,7 @@ export default function PhotoUploadForm({
       // tg.onEvent("file_selected", (files: any[]) => {
       //   console.log("Выбранные файлы:", files);
       // });
-      const files = await tg.chooseFile({
+      const files = await tg.filePicker({
         multiple: false,
         accept: ["image/*"],
       });
