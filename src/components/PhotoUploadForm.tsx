@@ -263,13 +263,13 @@ export default function PhotoUploadForm({
     console.log("handelTgPhoto");
     if (window.Telegram?.WebApp) {
       const tg: any = window.Telegram.WebApp;
-
-      tg.openRequestDialog("photo", (result: any) => {
-        console.log("result", result);
-      });
-      tg.onEvent("file_selected", (files: any[]) => {
-        console.log("Выбранные файлы:", files);
-      });
+      console.log("tg", tg);
+      // tg.openRequestDialog("photo", (result: any) => {
+      //   console.log("result", result);
+      // });
+      // tg.onEvent("file_selected", (files: any[]) => {
+      //   console.log("Выбранные файлы:", files);
+      // });
     } else {
       alert("Please use Telegram WebApp to upload photos");
     }
