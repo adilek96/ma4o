@@ -21,6 +21,7 @@ export async function uploadFileAction(files: File | File[]): Promise<MultipleUp
 
     // Преобразуем в массив, если передан один файл
     const fileArray = Array.isArray(files) ? files : [files];
+    
     console.log("файлы получены");
     fileArray.forEach((file) => {
       console.log('file', file.name, "file size", file.size, "file type" , file.type);
