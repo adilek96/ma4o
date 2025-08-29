@@ -1,63 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Stack from "./Stack";
 import { FaTimes, FaHeart } from "react-icons/fa";
-// import { useSearch } from "@/hooks/useSearch";
-
-const mockProfiles = [
-  {
-    id: 1,
-    name: "Anna",
-    age: 25,
-    bio: "Love traveling and photography 📸✈️",
-    image:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face",
-    interests: ["Travel", "Photography", "Coffee"],
-  },
-  {
-    id: 2,
-    name: "Maria",
-    age: 28,
-    bio: "Yoga instructor and nature lover 🧘‍♀️🌿",
-    image:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop&crop=face",
-    interests: ["Yoga", "Nature", "Meditation"],
-  },
-  {
-    id: 3,
-    name: "Sofia",
-    age: 24,
-    bio: "Artist and coffee enthusiast ☕🎨",
-    image:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop&crop=face",
-    interests: ["Art", "Coffee", "Music"],
-  },
-];
+import { useSearch } from "@/hooks/useSearch";
 
 const DiscoverScreen = () => {
   useTranslation();
   const [seed] = useState(() => Math.random());
 
-  // const { results, handleSearch, loading } = useSearch();
+  const { results, handleSearch, loading } = useSearch();
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     await handleSearch();
-  //   };
-  //   fetchData();
-  // }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      await handleSearch();
+    };
+    fetchData();
+  }, []);
 
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
-  // // if (results.length === 0) {
-  // //   return <div>No results found</div>;
-  // // }
-  // if (results.length > 0) {
-  //   console.log("results", results);
-  // }
+  if (results.length > 0) {
+    console.log("results", results);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[100vh] w-full justify-center items-center text-center text-2xl font-bold">
+        Loading...
+      </div>
+    );
+  }
+
+  if (results.length === 0) {
+    return (
+      <div className="flex h-[100vh] w-full justify-center items-center text-center text-2xl font-bold">
+        No results found
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]   animate-fadeInUp">
@@ -78,9 +58,9 @@ const DiscoverScreen = () => {
             sensitivity={180}
             sendToBackOnClick
             cardDimensions={{ width: 320, height: 520 }}
-            cardsData={mockProfiles.map((p) => ({
+            cardsData={results.map((p: any) => ({
               id: p.id,
-              img: p.image,
+              img: p.photo,
               name: p.name,
               age: p.age,
               bio: p.bio,

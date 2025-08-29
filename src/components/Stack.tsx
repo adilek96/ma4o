@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { motion, useMotionValue, useTransform } from "motion/react";
 import React, { useState } from "react";
+import { interests } from "@/constants";
 
 interface CardRotateProps {
   children: React.ReactNode;
@@ -45,7 +47,7 @@ function CardRotate({ children, onSendToBack, sensitivity }: CardRotateProps) {
 
 type StackCard = {
   id: number;
-  img: string;
+  img: { url: string; isMain: boolean }[];
   name?: string;
   age?: number;
   bio?: string;
@@ -73,37 +75,59 @@ export default function Stack({
   sendToBackOnClick = false,
   onReady,
 }: StackProps) {
+  const { t } = useTranslation();
   const [cards, setCards] = useState<StackCard[]>(
     cardsData.length
       ? cardsData
       : [
           {
             id: 1,
-            img: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format",
+            img: [
+              {
+                url: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format",
+                isMain: true,
+              },
+            ],
             name: "Anna",
             age: 25,
-            bio: "Love traveling and photography",
+            bio: "Love traveling and photography 📸✈️",
+            interests: ["Travel", "Photography", "Coffee"],
           },
           {
             id: 2,
-            img: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format",
+            img: [
+              {
+                url: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format",
+                isMain: true,
+              },
+            ],
             name: "Maria",
             age: 28,
-            bio: "Nature lover and yoga instructor",
+            bio: "Nature lover and yoga instructor 🧘‍♀️🌿",
           },
           {
             id: 3,
-            img: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format",
+            img: [
+              {
+                url: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format",
+                isMain: true,
+              },
+            ],
             name: "Sofia",
             age: 24,
-            bio: "Artist and coffee enthusiast",
+            bio: "Artist and coffee enthusiast ☕🎨",
           },
           {
             id: 4,
-            img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format",
+            img: [
+              {
+                url: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format",
+                isMain: true,
+              },
+            ],
             name: "Elena",
             age: 26,
-            bio: "Reader and cyclist",
+            bio: "Reader and cyclist 📚🚴‍♀️",
           },
         ]
   );
@@ -133,6 +157,15 @@ export default function Stack({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards.length, onReady]);
 
+  // Функция для получения переведенного названия интереса
+  const getInterestName = (interest: string) => {
+    // Проверяем, что интерес существует в нашем списке
+    if (interests.includes(interest as any)) {
+      return t(`interests.${interest}`);
+    }
+    return interest; // Возвращаем оригинальное значение, если перевод не найден
+  };
+
   return (
     <div
       className="relative"
@@ -145,7 +178,7 @@ export default function Stack({
       {cards.map((card, index) => {
         const randomRotate = randomRotation ? Math.random() * 10 - 5 : 0;
         const isTop = index === cards.length - 1;
-
+        console.log("card", card);
         return (
           <CardRotate
             key={card.id}
@@ -174,7 +207,10 @@ export default function Stack({
               }}
             >
               <img
-                src={card.img}
+                src={
+                  card.img.find((img: any) => img.isMain === true)?.url ||
+                  card.img[0].url
+                }
                 alt={`card-${card.id}`}
                 className="w-full h-full object-cover pointer-events-none"
               />
@@ -200,7 +236,7 @@ export default function Stack({
                             key={i}
                             className="text-sm px-3 py-1 rounded-lg bg-white/20 text-foreground border border-white/30"
                           >
-                            {tag}
+                            {getInterestName(tag)}
                           </span>
                         ))}
                       </div>
