@@ -169,7 +169,6 @@ export default function PhotoUploadForm({
 
   const handleFileSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      console.log("event", event.target);
       const files = event.target.files;
       if (!files || files.length === 0) {
         alert("Файл не выбран. Пожалуйста, разрешите доступ к фото/камера.");
