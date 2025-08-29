@@ -121,9 +121,8 @@ export default function PhotoUploadForm({
       setUploadingCount((prev) => prev + validFiles.length);
 
       try {
-        const result: MultipleUploadResponse = await uploadFileAction(
-          validFiles
-        );
+        const result: MultipleUploadResponse =
+          await uploadFileAction(validFiles);
 
         if (result.success && result.photoData && result.photoData.length > 0) {
           // Обновляем фотографии с новыми URL и ID
@@ -171,9 +170,11 @@ export default function PhotoUploadForm({
   const handleFileSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
-      if (files) {
-        handleFileUpload(Array.from(files));
+      if (!files || files.length === 0) {
+        alert("Файл не выбран. Пожалуйста, разрешите доступ к фото/камера.");
+        return;
       }
+      handleFileUpload(Array.from(files));
     },
     [handleFileUpload]
   );
