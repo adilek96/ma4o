@@ -259,6 +259,21 @@ export default function PhotoUploadForm({
     onClose();
   };
 
+  const handelTgPhoto = () => {
+    if (window.Telegram?.WebApp) {
+      const tg: any = window.Telegram.WebApp;
+
+      tg.openRequestDialog("photo", (result: any) => {
+        console.log("result", result);
+      });
+      tg.onEvent("file_selected", (files: any[]) => {
+        console.log("Выбранные файлы:", files);
+      });
+    } else {
+      alert("Please use Telegram WebApp to upload photos");
+    }
+  };
+
   const canProceed = photos.length > 0 && uploadingCount === 0;
 
   return (
@@ -315,15 +330,23 @@ export default function PhotoUploadForm({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
           >
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileSelect}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-
+            {window.Telegram?.WebApp ? (
+              <button
+                onClick={() => {
+                  handelTgPhoto();
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            ) : (
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            )}
             <div className="space-y-4">
               <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
                 <svg

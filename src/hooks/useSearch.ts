@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
 export function useSearch() {
-    console.log("стучимся в поиск");
+    
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(true);
 

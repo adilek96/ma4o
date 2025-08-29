@@ -47,11 +47,16 @@ const DiscoverScreen = () => {
       await handleSearch();
     };
     fetchData();
-    console.log("results", results);
   }, []);
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+  if (results.length === 0) {
+    return <div>No results found</div>;
+  }
+  if (results.length > 0) {
+    console.log("results", results);
   }
 
   return (
