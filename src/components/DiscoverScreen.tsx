@@ -31,7 +31,7 @@ const DiscoverScreen = () => {
     );
   }
 
-  if (results.length === 0) {
+  if (!results || results.length === 0) {
     return (
       <div className="flex h-[100vh] w-full justify-center items-center text-center text-2xl font-bold">
         No results found
