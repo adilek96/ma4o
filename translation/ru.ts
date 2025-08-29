@@ -2,6 +2,13 @@ export const ru = {
     "app" : {
         "title" : "Мое приложение"
     },
+    "discover": {
+        "searching": "Поиск...",
+        "searchFailed": "Поиск не увенчался успехом",
+        "searchFailedSubtitle": "Попробуйте обновить критерии поиска или попробуйте еще раз",
+        "updatePreferences": "Обновить предпочтения",
+        "retrySearch": "Повторить поиск"
+    },
     "interests" : {
         "sports":"Спорт",
         "music":"Музыка",

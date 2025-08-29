@@ -2,6 +2,13 @@ export const en = {
    "app" : {
     "title" : "My App"
    },
+   "discover": {
+       "searching": "Searching...",
+       "searchFailed": "Search failed",
+       "searchFailedSubtitle": "Try updating search criteria or try again",
+       "updatePreferences": "Update preferences",
+       "retrySearch": "Retry search"
+   },
    "interests" : {
          "sports":"Sports",
          "music":"Music",

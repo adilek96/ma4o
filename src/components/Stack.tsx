@@ -178,7 +178,7 @@ export default function Stack({
       {cards.map((card, index) => {
         const randomRotate = randomRotation ? Math.random() * 10 - 5 : 0;
         const isTop = index === cards.length - 1;
-        console.log("card", card);
+        // console.log("card", card);
         return (
           <CardRotate
             key={card.id}

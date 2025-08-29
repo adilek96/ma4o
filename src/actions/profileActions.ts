@@ -47,6 +47,7 @@ export async function createProfileAction(profileData: ProfileData): Promise<{ s
 
 // Экшен для обновления профиля
 export async function updateProfileAction(profileData: ProfileData): Promise<{ success: boolean; error?: string; profileId?: string }> {
+  console.log("profileData for update", profileData);
   try {
     // Здесь будет реальный API запрос
     const aplication = import.meta.env.VITE_APPLICATION;

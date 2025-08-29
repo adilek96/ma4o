@@ -15,7 +15,7 @@ export function useSearch() {
 
 
     const handleSearch = useCallback(async () => {
-        
+        setLoading(true);
  try {
     const response = await fetch(`${baseUrl}/api/v1/search`, {
         method: "GET",

@@ -1,4 +1,4 @@
-import { useState, useOptimistic, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   createPreferencesAction,
@@ -63,14 +63,6 @@ export default function PreferencesSetupForm({
     }
   }, [isEditMode, initialData, userId]);
 
-  // Используем useOptimistic для оптимистичных обновлений
-  const [, addOptimisticPreferences] = useOptimistic<
-    PreferencesData | null,
-    PreferencesData
-  >(null, (_state, newPreferences) => {
-    return newPreferences;
-  });
-
   // Используем useTransition для обработки асинхронных операций
   const [isPending, startTransition] = useTransition();
 
@@ -124,9 +116,6 @@ export default function PreferencesSetupForm({
 
   const handleSubmit = () => {
     if (validateForm()) {
-      // Используем оптимистичное обновление при отправке формы
-      addOptimisticPreferences(formData);
-
       // Запускаем реальный запрос в транзиции
       startTransition(async () => {
         try {
