@@ -7,9 +7,19 @@ interface CardRotateProps {
   children: React.ReactNode;
   onSendToBack: () => void;
   sensitivity: number;
+  cardId: number;
+  onLike: (cardId: number) => void;
+  onDislike: (cardId: number) => void;
 }
 
-function CardRotate({ children, onSendToBack, sensitivity }: CardRotateProps) {
+function CardRotate({
+  children,
+  onSendToBack,
+  sensitivity,
+  cardId,
+  onLike,
+  onDislike,
+}: CardRotateProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-100, 100], [60, -60]);
@@ -23,6 +33,26 @@ function CardRotate({ children, onSendToBack, sensitivity }: CardRotateProps) {
       Math.abs(info.offset.x) > sensitivity ||
       Math.abs(info.offset.y) > sensitivity
     ) {
+      // Определяем направление свайпа
+      if (Math.abs(info.offset.x) > Math.abs(info.offset.y)) {
+        // Горизонтальный свайп
+        if (info.offset.x > 0) {
+          console.log("Свайп вправо - ЛАЙК ❤️");
+          onLike(cardId);
+        } else {
+          console.log("Свайп влево - ДИЗЛАЙК 👎");
+          onDislike(cardId);
+        }
+      } else {
+        // Вертикальный свайп
+        if (info.offset.y > 0) {
+          console.log("Свайп вниз - ДИЗЛАЙК 👎");
+          onDislike(cardId);
+        } else {
+          console.log("Свайп вверх - ЛАЙК ❤️");
+          onLike(cardId);
+        }
+      }
       onSendToBack();
     } else {
       x.set(0);
@@ -76,6 +106,56 @@ export default function Stack({
   onReady,
 }: StackProps) {
   const { t } = useTranslation();
+
+  // Определяем базовый URL для API
+  const aplication = import.meta.env.VITE_APPLICATION;
+  const baseUrlDev = import.meta.env.VITE_BASE_API_URL_DEV;
+  const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
+  const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
+
+  // Функция для отправки лайка
+  const handleLike = async (cardId: number) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/v1/user/like/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId: cardId }),
+      });
+
+      if (response.ok) {
+        console.log(`Лайк отправлен для пользователя ${cardId}`);
+      } else {
+        console.error("Ошибка при отправке лайка:", response.status);
+      }
+    } catch (error) {
+      console.error("Ошибка при отправке лайка:", error);
+    }
+  };
+
+  // Функция для отправки дизлайка
+  const handleDislike = async (cardId: number) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/v1/user/skip/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ userId: cardId }),
+      });
+
+      if (response.ok) {
+        console.log(`Дизлайк отправлен для пользователя ${cardId}`);
+      } else {
+        console.error("Ошибка при отправке дизлайка:", response.status);
+      }
+    } catch (error) {
+      console.error("Ошибка при отправке дизлайка:", error);
+    }
+  };
   const [cards, setCards] = useState<StackCard[]>(
     cardsData.length
       ? cardsData
@@ -184,6 +264,9 @@ export default function Stack({
             key={card.id}
             onSendToBack={() => sendToBack(card.id)}
             sensitivity={sensitivity}
+            cardId={card.id}
+            onLike={handleLike}
+            onDislike={handleDislike}
           >
             <motion.div
               className="rounded-2xl overflow-hidden border border-border component-bg shadow-md"

@@ -47,7 +47,7 @@ export async function createProfileAction(profileData: ProfileData): Promise<{ s
 
 // Экшен для обновления профиля
 export async function updateProfileAction(profileData: ProfileData): Promise<{ success: boolean; error?: string; profileId?: string }> {
-  console.log("profileData for update", profileData);
+
   try {
     // Здесь будет реальный API запрос
     const aplication = import.meta.env.VITE_APPLICATION;
@@ -55,7 +55,7 @@ export async function updateProfileAction(profileData: ProfileData): Promise<{ s
     const baseUrlProd = import.meta.env.VITE_BASE_API_URL_PROD;
     const baseUrl = aplication === "production" ? baseUrlProd : baseUrlDev;
 
-    console.log("profileData for update", profileData);
+    
 
     const response = await fetch(`${baseUrl}/api/v1/user/profile/update`, {
       method: 'PUT',
